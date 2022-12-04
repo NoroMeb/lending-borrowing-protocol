@@ -1,5 +1,5 @@
 from scripts.utils import get_account
-from brownie import PoolConfiguration, MockDai, Pool, LinkTokenMock
+from brownie import PoolConfiguration, MockDai, Pool, Contract, XToken
 from web3 import Web3
 
 
@@ -17,12 +17,13 @@ def main():
 
     # test
 
-    x_dai = pool_configuration.getXToken(dai)
+    x_dai_address = pool_configuration.getXToken(dai)
     print("=====================================")
     print("xDAI contract balance :")
-    print(dai.balanceOf(x_dai))
+    print(dai.balanceOf(x_dai_address))
     print("=====================================")
+    x_dai_contract = Contract.from_abi("XToken", x_dai_address, XToken.abi)
     print("=====================================")
     print("account balance :")
-    print(x_dai.balanceOf(account))
+    print(x_dai_contract.balanceOf(account))
     print("=====================================")
