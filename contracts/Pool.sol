@@ -2,13 +2,17 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./PoolConfiguration.sol";
 import "../interfaces/IXToken.sol";
 
-contract Pool {
+contract Pool is Ownable {
     PoolConfiguration poolConfiguration;
 
-    constructor(address _poolConfigurationAddress) public {
+    function setPoolConfigurationAddress(address _poolConfigurationAddress)
+        external
+        onlyOwner
+    {
         poolConfiguration = PoolConfiguration(_poolConfigurationAddress);
     }
 
