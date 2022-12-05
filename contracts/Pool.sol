@@ -29,7 +29,20 @@ contract Pool is Ownable {
 
     function borrow() public {}
 
-    function withdraw() public {}
+    function withdraw(address _asset, uint256 _amount) public {
+        require(_amount > 0, "Amount must be greater than 0");
+        require(
+            poolConfiguration.getIsAvailable(_asset),
+            "Token not available"
+        );
+
+        address xtoken = poolConfiguration.getXToken(_asset);
+        uint256 userBalance = IXToken(xtoken).balanceOf(msg.sender);
+        require(userBalance > 0, "Dont' have any funds");
+
+        IXToken(xtoken).transferUnderlyingAssetTo(msg.sender, _amount);
+        IXToken(xtoken).burn(msg.sender, _amount);
+    }
 
     function repay() public {}
 }

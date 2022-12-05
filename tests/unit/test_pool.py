@@ -10,7 +10,6 @@ def test_set_pool_configuration_address(skip_live_testing, pool, dai):
     skip_live_testing
     account = get_account()
     non_owner = get_account(index=2)
-    pool = pool
     pool_configuration = test_add_token(skip_live_testing, pool, dai)
 
     # assert
@@ -38,10 +37,8 @@ def test_supply(skip_live_testing, pool, dai, link):
     pool, pool_configuration = test_set_pool_configuration_address(
         skip_live_testing, pool, dai
     )
-    dai = dai
     amount = Web3.toWei(100, "ether")
     dai.approve(pool, amount, {"from": account})
-    link = link
     x_token_address = pool_configuration.getXToken(dai)
     x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
 
@@ -57,3 +54,26 @@ def test_supply(skip_live_testing, pool, dai, link):
     # assert
     assert dai.balanceOf(x_token_address) == amount
     assert x_token_contract.balanceOf(account) == amount
+
+    return pool, pool_configuration, x_token_contract
+
+
+def test_withdraw(skip_live_testing, pool, dai, link):
+    # arrange
+    skip_live_testing
+    account = get_account()
+    pool, pool_configuration, x_token_contract = test_supply(
+        skip_live_testing, pool, dai, link
+    )
+    amount = Web3.toWei(100, "ether")
+    x_token_address = pool_configuration.getXToken(dai)
+    initial_dai_account_balance = dai.balanceOf(account)
+
+    # act
+    withdraw_tx = pool.withdraw(dai, amount)
+    withdraw_tx.wait(1)
+
+    # assert
+    assert x_token_contract.balanceOf(account) == 0
+    assert dai.balanceOf(x_token_address) == 0
+    assert dai.balanceOf(account) == initial_dai_account_balance + amount

@@ -7,7 +7,6 @@ def test_deploy_pool_configuration(skip_live_testing, pool):
     # arrange
     skip_live_testing
     account = get_account()
-    pool = pool
 
     # act
     pool_configuration = PoolConfiguration.deploy(pool.address, {"from": account})
@@ -24,7 +23,6 @@ def test_add_token(skip_live_testing, pool, dai):
     account = get_account()
     non_owner = get_account(index=2)
     pool_configuration = test_deploy_pool_configuration(skip_live_testing, pool)
-    dai = dai
     name = "xDai"
     symbol = "xDai"
 
@@ -42,6 +40,8 @@ def test_add_token(skip_live_testing, pool, dai):
 
     assert x_token_contract.name() == name
     assert x_token_contract.symbol() == symbol
+    assert x_token_contract.poolAddress() == pool
+    assert x_token_contract.underlyingAsset() == dai
     assert pool_configuration.underlyingAssetToXtoken(dai) == x_token_address
     assert pool_configuration.IsAvailable(dai) == True
 
@@ -52,7 +52,6 @@ def test_get_x_token(skip_live_testing, pool, dai):
     # arrange
     skip_live_testing
     account = get_account()
-    dai = dai
     pool_configuration = test_add_token(skip_live_testing, pool, dai)
 
     # act / assert
@@ -63,7 +62,6 @@ def test_get_is_available(skip_live_testing, pool, dai):
     # arrange
     skip_live_testing
     account = get_account()
-    dai = dai
     pool_configuration = test_add_token(skip_live_testing, pool, dai)
 
     # act / assert

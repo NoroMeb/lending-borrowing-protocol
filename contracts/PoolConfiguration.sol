@@ -20,7 +20,7 @@ contract PoolConfiguration is Ownable {
         string memory _name,
         string memory _symbol
     ) public onlyOwner {
-        xtoken = new XToken(_name, _symbol, poolAddress);
+        xtoken = new XToken(_name, _symbol, _underlyingAsset, poolAddress);
         underlyingAssetToXtoken[_underlyingAsset] = address(xtoken);
         IsAvailable[_underlyingAsset] = true;
     }
