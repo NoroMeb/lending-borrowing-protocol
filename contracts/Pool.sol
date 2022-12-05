@@ -38,7 +38,7 @@ contract Pool is Ownable {
 
         address xtoken = poolConfiguration.getXToken(_asset);
         uint256 userBalance = IXToken(xtoken).balanceOf(msg.sender);
-        require(userBalance > 0, "Dont' have any funds");
+        require(userBalance > 0, "Don't have any funds");
 
         IXToken(xtoken).transferUnderlyingAssetTo(msg.sender, _amount);
         IXToken(xtoken).burn(msg.sender, _amount);

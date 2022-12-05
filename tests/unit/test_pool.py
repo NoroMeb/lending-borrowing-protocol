@@ -62,12 +62,17 @@ def test_withdraw(skip_live_testing, pool, dai, link):
     # arrange
     skip_live_testing
     account = get_account()
+    account_2 = get_account(index=2)
     pool, pool_configuration, x_token_contract = test_supply(
         skip_live_testing, pool, dai, link
     )
     amount = Web3.toWei(100, "ether")
     x_token_address = pool_configuration.getXToken(dai)
     initial_dai_account_balance = dai.balanceOf(account)
+
+    # assert
+    with pytest.raises(exceptions.VirtualMachineError):
+        pool.withdraw(dai, amount, {"from": account})
 
     # act
     withdraw_tx = pool.withdraw(dai, amount)
