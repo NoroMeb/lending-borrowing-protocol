@@ -7,7 +7,7 @@ import "./PoolConfiguration.sol";
 import "../interfaces/IXToken.sol";
 
 contract Pool is Ownable {
-    PoolConfiguration poolConfiguration;
+    PoolConfiguration public poolConfiguration;
 
     function setPoolConfigurationAddress(address _poolConfigurationAddress)
         external
