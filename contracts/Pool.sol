@@ -27,7 +27,15 @@ contract Pool is Ownable {
         IXToken(xtoken).mint(msg.sender, _amount);
     }
 
-    function borrow() public {}
+    function borrow(address _asset, uint256 _amount) public {
+        require(_amount > 0, "insufficient amount");
+        require(
+            poolConfiguration.getIsAvailable(_asset),
+            "Token not available"
+        );
+
+        uint256 userBalance = IXToken(xtoken).balanceOf(msg.sender);
+    }
 
     function withdraw(address _asset, uint256 _amount) public {
         require(_amount > 0, "Amount must be greater than 0");

@@ -72,7 +72,7 @@ def test_withdraw(skip_live_testing, pool, dai, link):
 
     # assert
     with pytest.raises(exceptions.VirtualMachineError):
-        pool.withdraw(dai, amount, {"from": account})
+        pool.withdraw(dai, amount, {"from": account_2})
 
     # act
     withdraw_tx = pool.withdraw(dai, amount)

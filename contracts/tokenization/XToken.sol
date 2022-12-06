@@ -22,11 +22,11 @@ contract XToken is ERC20 {
     }
 
     function mint(address _account, uint256 _amount) external onlyPool {
-        _mint(_account, _amount);
+        super._mint(_account, _amount);
     }
 
     function burn(address _account, uint256 _amount) external onlyPool {
-        _burn(_account, _amount);
+        super._burn(_account, _amount);
     }
 
     function transferUnderlyingAssetTo(address _account, uint256 _amount)
