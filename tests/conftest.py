@@ -1,7 +1,7 @@
 import pytest
 from web3 import Web3
 from scripts.utils import get_account, LOCAL_BLOCKCHAIN_ENVIRONMENTS
-from brownie import Pool, MockDai, network, LinkTokenMock
+from brownie import Pool, MockDai, network, LinkTokenMock, MockV3Aggregator
 
 
 @pytest.fixture
@@ -29,3 +29,16 @@ def link():
 def skip_live_testing():
     if network.show_active() not in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
         pytest.skip("Only for local testing !")
+
+
+@pytest.fixture()
+def mock_v3_aggregator():
+    account = get_account()
+    decimals = 18
+    price = 1000
+    price_in_wei = Web3.toWei(price, "ether")
+    mock_v3_aggregator = MockV3Aggregator.deploy(
+        decimals, price_in_wei, {"from": account}
+    )
+
+    return mock_v3_aggregator

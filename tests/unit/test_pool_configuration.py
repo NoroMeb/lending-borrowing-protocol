@@ -1,6 +1,7 @@
 from scripts.utils import get_account
-from brownie import PoolConfiguration, Contract, XToken, exceptions
+from brownie import PoolConfiguration, Contract, XToken, exceptions, MockV3Aggregator
 import pytest
+from web3 import Web3
 
 
 def test_deploy_pool_configuration(skip_live_testing, pool):
@@ -17,7 +18,7 @@ def test_deploy_pool_configuration(skip_live_testing, pool):
     return pool_configuration
 
 
-def test_add_token(skip_live_testing, pool, dai):
+def test_add_token(skip_live_testing, pool, dai, mock_v3_aggregator):
     # arrange
     skip_live_testing
     account = get_account()
@@ -27,10 +28,16 @@ def test_add_token(skip_live_testing, pool, dai):
     symbol = "xDai"
 
     # assert
+
     with pytest.raises(exceptions.VirtualMachineError):
-        pool_configuration.addToken(dai, name, symbol, {"from": non_owner})
+        pool_configuration.addToken(
+            name, symbol, dai, mock_v3_aggregator, 18, {"from": non_owner}
+        )
+
     # act
-    add_token_tx = pool_configuration.addToken(dai, name, symbol, {"from": account})
+    add_token_tx = pool_configuration.addToken(
+        name, symbol, dai, mock_v3_aggregator, 18, {"from": account}
+    )
     add_token_tx.wait(1)
     # arrange
     x_token_address = pool_configuration.xtoken()
@@ -45,24 +52,9 @@ def test_add_token(skip_live_testing, pool, dai):
     assert pool_configuration.underlyingAssetToXtoken(dai) == x_token_address
     assert pool_configuration.IsAvailable(dai) == True
 
-    return pool_configuration
+    assert (
+        pool_configuration.underlyingAssetToPriceOracle(dai)
+        == pool_configuration.priceOracle()
+    )
 
-
-def test_get_x_token(skip_live_testing, pool, dai):
-    # arrange
-    skip_live_testing
-    account = get_account()
-    pool_configuration = test_add_token(skip_live_testing, pool, dai)
-
-    # act / assert
-    assert pool_configuration.getXToken(dai) == pool_configuration.xtoken()
-
-
-def test_get_is_available(skip_live_testing, pool, dai):
-    # arrange
-    skip_live_testing
-    account = get_account()
-    pool_configuration = test_add_token(skip_live_testing, pool, dai)
-
-    # act / assert
-    assert pool_configuration.getIsAvailable(dai) == True
+    return pool_configuration, x_token_contract

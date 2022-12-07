@@ -5,12 +5,16 @@ from brownie import exceptions, XToken, Contract
 from web3 import Web3
 
 
-def test_set_pool_configuration_address(skip_live_testing, pool, dai):
+def test_set_pool_configuration_address(
+    skip_live_testing, pool, dai, mock_v3_aggregator
+):
     # arrange
     skip_live_testing
     account = get_account()
     non_owner = get_account(index=2)
-    pool_configuration = test_add_token(skip_live_testing, pool, dai)
+    pool_configuration, x_token_contract = test_add_token(
+        skip_live_testing, pool, dai, mock_v3_aggregator
+    )
 
     # assert
     with pytest.raises(exceptions.VirtualMachineError):
@@ -30,16 +34,16 @@ def test_set_pool_configuration_address(skip_live_testing, pool, dai):
     return pool, pool_configuration
 
 
-def test_supply(skip_live_testing, pool, dai, link):
+def test_supply(skip_live_testing, pool, dai, link, mock_v3_aggregator):
     # arrange
     skip_live_testing
     account = get_account()
     pool, pool_configuration = test_set_pool_configuration_address(
-        skip_live_testing, pool, dai
+        skip_live_testing, pool, dai, mock_v3_aggregator
     )
     amount = Web3.toWei(100, "ether")
     dai.approve(pool, amount, {"from": account})
-    x_token_address = pool_configuration.getXToken(dai)
+    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
     x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
 
     # assert
@@ -55,19 +59,19 @@ def test_supply(skip_live_testing, pool, dai, link):
     assert dai.balanceOf(x_token_address) == amount
     assert x_token_contract.balanceOf(account) == amount
 
-    return pool, pool_configuration, x_token_contract
+    return pool, pool_configuration, x_token_contract, x_token_address
 
 
-def test_withdraw(skip_live_testing, pool, dai, link):
+def test_withdraw(skip_live_testing, pool, dai, link, mock_v3_aggregator):
     # arrange
     skip_live_testing
     account = get_account()
     account_2 = get_account(index=2)
-    pool, pool_configuration, x_token_contract = test_supply(
-        skip_live_testing, pool, dai, link
+    pool, pool_configuration, x_token_contract, x_token_address = test_supply(
+        skip_live_testing, pool, dai, link, mock_v3_aggregator
     )
     amount = Web3.toWei(100, "ether")
-    x_token_address = pool_configuration.getXToken(dai)
+    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
     initial_dai_account_balance = dai.balanceOf(account)
 
     # assert

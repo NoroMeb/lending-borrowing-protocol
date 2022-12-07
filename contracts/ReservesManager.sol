@@ -19,10 +19,12 @@ contract ReservesManager {
         returns (uint256)
     {
         require(
-            poolConfiguration.getIsAvailable(_underlyingAsset),
+            poolConfiguration.IsAvailable(_underlyingAsset),
             "Token not available"
         );
-        address reserve = poolConfiguration.getXToken(_underlyingAsset);
+        address reserve = poolConfiguration.underlyingAssetToXtoken(
+            _underlyingAsset
+        );
         uint256 reserveBalance = IERC20(_underlyingAsset).balanceOf(reserve);
     }
 }
