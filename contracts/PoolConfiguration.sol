@@ -7,12 +7,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./PriceOracle.sol";
 
 contract PoolConfiguration is Ownable {
-    XToken public xtoken;
     address public poolAddress;
+    XToken public xtoken;
     PriceOracle public priceOracle;
 
     mapping(address => address) public underlyingAssetToXtoken;
-    mapping(address => bool) public IsAvailable;
+    mapping(address => bool) public isAvailable;
     mapping(address => address) public underlyingAssetToPriceOracle;
 
     constructor(address _poolAddress) public {
@@ -25,14 +25,16 @@ contract PoolConfiguration is Ownable {
         address _underlyingAsset,
         address _priceFeedAddress,
         uint256 _decimals
-    ) public onlyOwner {
+    ) public onlyOwner returns (address, address) {
         xtoken = new XToken(_name, _symbol, _underlyingAsset, poolAddress);
 
         underlyingAssetToXtoken[_underlyingAsset] = address(xtoken);
-        IsAvailable[_underlyingAsset] = true;
+        isAvailable[_underlyingAsset] = true;
 
         priceOracle = new PriceOracle(_priceFeedAddress, _decimals);
 
         underlyingAssetToPriceOracle[_underlyingAsset] = address(priceOracle);
+
+        return (address(xtoken), address(priceOracle));
     }
 }

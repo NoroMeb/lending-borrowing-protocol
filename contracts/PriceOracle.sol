@@ -4,8 +4,8 @@ pragma solidity ^0.8.9;
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract PriceOracle {
-    AggregatorV3Interface internal priceFeed;
-    uint256 internal decimals;
+    AggregatorV3Interface public priceFeed;
+    uint256 public decimals;
 
     constructor(address _priceFeedAddress, uint256 _decimals) public {
         priceFeed = AggregatorV3Interface(_priceFeedAddress);
