@@ -19,7 +19,7 @@ contract ReservesManager {
         returns (uint256)
     {
         require(
-            poolConfiguration.IsAvailable(_underlyingAsset),
+            poolConfiguration.isAvailable(_underlyingAsset),
             "Token not available"
         );
         address reserve = poolConfiguration.underlyingAssetToXtoken(

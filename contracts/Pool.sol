@@ -19,7 +19,7 @@ contract Pool is Ownable {
 
     function supply(address _asset, uint256 _amount) public {
         require(_amount > 0, "insufficient amount");
-        require(poolConfiguration.IsAvailable(_asset), "Token not available");
+        require(poolConfiguration.isAvailable(_asset), "Token not available");
         address xtoken = poolConfiguration.underlyingAssetToXtoken(_asset);
         IERC20(_asset).transferFrom(msg.sender, xtoken, _amount);
         IXToken(xtoken).mint(msg.sender, _amount);
@@ -31,7 +31,7 @@ contract Pool is Ownable {
 
     function withdraw(address _asset, uint256 _amount) public {
         require(_amount > 0, "Amount must be greater than 0");
-        require(poolConfiguration.IsAvailable(_asset), "Token not available");
+        require(poolConfiguration.isAvailable(_asset), "Token not available");
 
         address xtoken = poolConfiguration.underlyingAssetToXtoken(_asset);
         uint256 userBalance = IXToken(xtoken).balanceOf(msg.sender);

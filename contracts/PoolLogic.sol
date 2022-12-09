@@ -57,7 +57,7 @@ contract PoolLogic {
     ) public returns (bool) {
         require(_amount > 0, "insufficient amount");
         require(
-            poolConfiguration.IsAvailable(_underlyingAsset),
+            poolConfiguration.isAvailable(_underlyingAsset),
             "Token not available"
         );
 
