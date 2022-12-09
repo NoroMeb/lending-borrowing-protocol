@@ -8,8 +8,8 @@ import "./PriceOracle.sol";
 
 contract PoolConfiguration is Ownable {
     address public poolAddress;
-    XToken public xtoken;
-    PriceOracle public priceOracle;
+    XToken internal xtoken;
+    PriceOracle internal priceOracle;
 
     mapping(address => address) public underlyingAssetToXtoken;
     mapping(address => bool) public isAvailable;
@@ -25,7 +25,7 @@ contract PoolConfiguration is Ownable {
         address _underlyingAsset,
         address _priceFeedAddress,
         uint256 _decimals
-    ) public onlyOwner returns (address, address) {
+    ) external onlyOwner returns (address, address) {
         xtoken = new XToken(_name, _symbol, _underlyingAsset, poolAddress);
 
         underlyingAssetToXtoken[_underlyingAsset] = address(xtoken);

@@ -35,7 +35,7 @@ def test_add_token_creates_new_xtoken_instance(
     x_token_contract = Contract.from_abi("XToken", add_token[0], XToken.abi)
 
     # assert
-    assert add_token[0] == pool_configuration.xtoken()
+    assert add_token[0] == pool_configuration.getXToken.call()
     assert x_token_contract.name() == "xDAI"
 
 
@@ -60,7 +60,7 @@ def test_add_token_creates_new_price_oracle_instance(
     )
 
     # assert
-    assert add_token[1] == pool_configuration.priceOracle()
+    assert add_token[1] == pool_configuration.getPriceOracle.call()
     assert price_oracle_contract.priceFeed() == mock_v3_aggregator
 
 

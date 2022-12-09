@@ -3,11 +3,12 @@ from web3 import Web3
 from scripts.utils import get_account, LOCAL_BLOCKCHAIN_ENVIRONMENTS
 from brownie import (
     Pool,
-    PoolConfiguration,
+    PoolConfigurationMock,
     MockDai,
     network,
     LinkTokenMock,
     MockV3Aggregator,
+    PoolLogic,
 )
 
 
@@ -34,7 +35,7 @@ def pool(account):
 
 @pytest.fixture(scope="session")
 def pool_configuration(account, pool):
-    pool_configuration = PoolConfiguration.deploy(pool, {"from": account})
+    pool_configuration = PoolConfigurationMock.deploy(pool, {"from": account})
 
     return pool_configuration
 
@@ -79,3 +80,10 @@ def add_token(account, dai, mock_v3_aggregator, pool_configuration):
     x_token, price_oracle = add_token_tx.return_value
 
     return x_token, price_oracle
+
+
+@pytest.fixture(scope="session")
+def pool_logic(account, pool_configuration):
+    pool_logic = PoolLogic.deploy(pool_configuration, {"from": account})
+
+    return pool_logic

@@ -6,13 +6,13 @@ import "./PriceOracle.sol";
 import "./PoolConfiguration.sol";
 
 contract PoolLogic {
-    PriceOracle public priceOracle;
-
-    PoolConfiguration public poolConfiguration;
-
     uint256 public constant maxAmountRate = 7500; //in basis points
 
-    address public xToken;
+    PoolConfiguration public poolConfiguration;
+    PriceOracle internal priceOracle;
+
+    address internal xToken;
+    address internal priceOracleAddress;
 
     constructor(address _poolConfigurationAddress) public {
         poolConfiguration = PoolConfiguration(_poolConfigurationAddress);
@@ -25,8 +25,9 @@ contract PoolLogic {
         xToken = poolConfiguration.underlyingAssetToXtoken(_underlyingAsset);
         uint256 userBalance = IXToken(xToken).balanceOf(_account);
 
-        address priceOracleAddress = poolConfiguration
-            .underlyingAssetToPriceOracle(_underlyingAsset);
+        priceOracleAddress = poolConfiguration.underlyingAssetToPriceOracle(
+            _underlyingAsset
+        );
         priceOracle = PriceOracle(priceOracleAddress);
 
         uint256 assetPrice = priceOracle.getLatestPrice();
@@ -39,8 +40,9 @@ contract PoolLogic {
         public
         returns (uint256)
     {
-        address priceOracleAddress = poolConfiguration
-            .underlyingAssetToPriceOracle(_underlyingAsset);
+        priceOracleAddress = poolConfiguration.underlyingAssetToPriceOracle(
+            _underlyingAsset
+        );
         priceOracle = PriceOracle(priceOracleAddress);
 
         uint256 assetPrice = priceOracle.getLatestPrice();
