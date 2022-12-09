@@ -2,7 +2,7 @@ from brownie import Contract, XToken, PriceOracle, reverts
 from scripts.utils import get_account
 
 
-def test_deploy_pool_configuration(pool_configuration, pool):
+def test_pool_configuration_constructor(pool_configuration, pool):
     # assert
     assert pool_configuration.poolAddress() == pool.address
 
