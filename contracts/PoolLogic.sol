@@ -10,7 +10,7 @@ contract PoolLogic {
 
     PoolConfiguration public poolConfiguration;
 
-    uint256 constant maxAmountRate = 7500; //in basis points
+    uint256 public constant maxAmountRate = 7500; //in basis points
 
     address public xToken;
 
