@@ -7,28 +7,24 @@ import "./PoolConfiguration.sol";
 
 contract PoolLogic {
     uint256 public constant maxAmountRate = 7500; //in basis points
-
     PoolConfiguration public poolConfiguration;
-    PriceOracle internal priceOracle;
-
-    address internal xToken;
-    address internal priceOracleAddress;
 
     constructor(address _poolConfigurationAddress) public {
         poolConfiguration = PoolConfiguration(_poolConfigurationAddress);
     }
 
     function getUserBalanceInUSD(address _account, address _underlyingAsset)
-        public
+        internal
         returns (uint256)
     {
-        xToken = poolConfiguration.underlyingAssetToXtoken(_underlyingAsset);
-        uint256 userBalance = IXToken(xToken).balanceOf(_account);
-
-        priceOracleAddress = poolConfiguration.underlyingAssetToPriceOracle(
+        address xToken = poolConfiguration.underlyingAssetToXtoken(
             _underlyingAsset
         );
-        priceOracle = PriceOracle(priceOracleAddress);
+        uint256 userBalance = IXToken(xToken).balanceOf(_account);
+
+        address priceOracleAddress = poolConfiguration
+            .underlyingAssetToPriceOracle(_underlyingAsset);
+        PriceOracle priceOracle = PriceOracle(priceOracleAddress);
 
         uint256 assetPrice = priceOracle.getLatestPrice();
 
@@ -37,13 +33,12 @@ contract PoolLogic {
     }
 
     function getAmountInUSD(uint256 _amount, address _underlyingAsset)
-        public
+        internal
         returns (uint256)
     {
-        priceOracleAddress = poolConfiguration.underlyingAssetToPriceOracle(
-            _underlyingAsset
-        );
-        priceOracle = PriceOracle(priceOracleAddress);
+        address priceOracleAddress = poolConfiguration
+            .underlyingAssetToPriceOracle(_underlyingAsset);
+        PriceOracle priceOracle = PriceOracle(priceOracleAddress);
 
         uint256 assetPrice = priceOracle.getLatestPrice();
 
@@ -57,7 +52,7 @@ contract PoolLogic {
         address _underlyingAsset,
         uint256 _amount
     ) public returns (bool) {
-        require(_amount > 0, "insufficient amount");
+        require(_amount > 0, "Amount must be greater than 0");
         require(
             poolConfiguration.isAvailable(_underlyingAsset),
             "Token not available"

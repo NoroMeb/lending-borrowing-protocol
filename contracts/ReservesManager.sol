@@ -26,5 +26,7 @@ contract ReservesManager {
             _underlyingAsset
         );
         uint256 reserveBalance = IERC20(_underlyingAsset).balanceOf(reserve);
+
+        return reserveBalance;
     }
 }
