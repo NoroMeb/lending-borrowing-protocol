@@ -73,4 +73,27 @@ contract PoolLogic {
             return false;
         }
     }
+
+    function validateWithdraw(
+        address _account,
+        address _underlyingAsset,
+        uint256 _amount
+    ) public returns (bool) {
+        require(_amount > 0, "Amount must be greater than 0");
+        require(
+            poolConfiguration.isAvailable(_underlyingAsset),
+            "Token not available"
+        );
+
+        address xtoken = poolConfiguration.underlyingAssetToXtoken(
+            _underlyingAsset
+        );
+        uint256 userBalance = IXToken(xtoken).balanceOf(_account);
+
+        if (_amount > userBalance) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }
