@@ -1,7 +1,7 @@
 from scripts.utils import get_account
 from brownie import reverts, Contract, XToken
 from web3 import Web3
-from conftest import SUPPLY_AMOUNT
+from conftest import SUPPLY_AMOUNT, WITHDRAW_AMOUNT
 
 
 def test_set_pool_configuration_address(
@@ -82,54 +82,6 @@ def test_supply_mint_xtoken_to_supplier(supply, account, dai, pool_configuration
     assert x_token_contract.balanceOf(account) == SUPPLY_AMOUNT
 
 
-def test_withdraw_null_amount(supply, pool, account, dai):
-
-    # act / assert
-    with reverts("Amount must be greater than 0"):
-        pool.withdraw(dai, 0, {"from": account})
-
-
-def test_withdraw_non_available_token(supply, pool, account, link):
-
-    # arrange
-    amount = Web3.toWei(100, "ether")
-    with reverts("Token not available"):
-        pool.withdraw(link, amount, {"from": account})
-
-
-def test_withdraw_with_no_funds_supplied(
-    add_token, set_pool_configuration_address, pool, account, dai
-):
-
-    # arrange
-    amount = Web3.toWei(100, "ether")
-    with reverts("Don't have any funds here"):
-        pool.withdraw(dai, amount, {"from": account})
-
-
-def test_withdraw_transfer_funds_from_xtoken_to_withdrawer(
-    withdraw, dai, pool_configuration, account, account_initial_dai_balance
-):
-
-    # arrange
-    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
-    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
-
-    # assert
-    assert dai.balanceOf(x_token_address) == 0
-    assert dai.balanceOf(account) == account_initial_dai_balance
-
-
-def test_withdraw_burn_withdrawer_xtoken(withdraw, dai, pool_configuration, account):
-
-    # arrange
-    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
-    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
-
-    # assert
-    assert x_token_contract.balanceOf(account) == 0
-
-
 def test_borrow_invalid_amount(supply, dai, pool, set_pool_logic_address, account):
 
     # arrange
@@ -173,3 +125,61 @@ def test_borrow_burn_amount_of_xtoken(borrow, pool_configuration, dai, account):
 
     # assert
     assert x_token_contract.balanceOf(account) == expected
+
+
+def test_withdraw_invalid_amount(
+    supply,
+    dai,
+    pool,
+    set_pool_logic_address,
+    account,
+):
+
+    # arrange
+    amount = Web3.toWei(101, "ether")
+
+    # act
+    return_value = pool.withdraw.call(dai, amount, {"from": account})
+
+    # assert
+    assert return_value == 0
+
+
+def test_withdraw_valid_amount(
+    supply,
+    dai,
+    pool,
+    set_pool_logic_address,
+    account,
+):
+
+    # arrange
+    amount = Web3.toWei(100, "ether")
+
+    # act
+    return_value = pool.withdraw.call(dai, amount, {"from": account})
+
+    # assert
+    assert return_value == amount
+
+
+def test_withdraw_transfer_funds_from_xtoken_to_withdrawer(
+    account_initial_dai_balance, withdraw, pool_configuration, dai, account
+):
+
+    # arrange
+    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
+
+    # assert
+    assert dai.balanceOf(x_token_address) == 0
+    assert dai.balanceOf(account) == account_initial_dai_balance
+
+
+def test_withdraw_burn_amount_of_xtoken(withdraw, pool_configuration, dai, account):
+
+    # arrange
+    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
+    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
+
+    # assert
+    assert x_token_contract.balanceOf(account) == 0

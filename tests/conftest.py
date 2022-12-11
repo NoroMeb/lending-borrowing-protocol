@@ -16,6 +16,7 @@ from brownie import (
 PRICE = 10
 SUPPLY_AMOUNT = Web3.toWei(100, "ether")
 BORROW_AMOUNT = Web3.toWei(75, "ether")
+WITHDRAW_AMOUNT = SUPPLY_AMOUNT
 
 
 @pytest.fixture()
@@ -118,11 +119,6 @@ def supply(add_token, set_pool_configuration_address, pool, account, dai):
 
 
 @pytest.fixture()
-def withdraw(supply, pool, account, dai):
-    pool.withdraw(dai, SUPPLY_AMOUNT, {"from": account})
-
-
-@pytest.fixture()
 def price_oracle(account, mock_v3_aggregator):
     decimals = 18
     price_oracle = PriceOracle.deploy(mock_v3_aggregator, decimals, {"from": account})
@@ -140,3 +136,8 @@ def reserves_manager(account, pool_configuration):
 @pytest.fixture()
 def borrow(supply, dai, pool, set_pool_logic_address, account):
     pool.borrow(dai, BORROW_AMOUNT, {"from": account})
+
+
+@pytest.fixture()
+def withdraw(supply, dai, pool, set_pool_logic_address, account):
+    pool.withdraw(dai, WITHDRAW_AMOUNT, {"from": account})
