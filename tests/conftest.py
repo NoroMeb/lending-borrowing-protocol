@@ -15,6 +15,7 @@ from brownie import (
 
 PRICE = 10
 SUPPLY_AMOUNT = Web3.toWei(100, "ether")
+BORROW_AMOUNT = Web3.toWei(75, "ether")
 
 
 @pytest.fixture()
@@ -43,6 +44,13 @@ def pool_configuration(account, pool):
     pool_configuration = PoolConfigurationMock.deploy(pool, {"from": account})
 
     return pool_configuration
+
+
+@pytest.fixture()
+def pool_logic(account, pool_configuration):
+    pool_logic = PoolLogicMock.deploy(pool_configuration, {"from": account})
+
+    return pool_logic
 
 
 @pytest.fixture()
@@ -99,6 +107,11 @@ def set_pool_configuration_address(account, pool, pool_configuration):
 
 
 @pytest.fixture()
+def set_pool_logic_address(account, pool, pool_logic):
+    pool.setPoolLogicAddress(pool_logic, {"from": account})
+
+
+@pytest.fixture()
 def supply(add_token, set_pool_configuration_address, pool, account, dai):
     dai.approve(pool, SUPPLY_AMOUNT, {"from": account})
     pool.supply(dai, SUPPLY_AMOUNT, {"from": account})
@@ -118,14 +131,12 @@ def price_oracle(account, mock_v3_aggregator):
 
 
 @pytest.fixture()
-def pool_logic(account, pool_configuration):
-    pool_logic = PoolLogicMock.deploy(pool_configuration, {"from": account})
-
-    return pool_logic
-
-
-@pytest.fixture()
 def reserves_manager(account, pool_configuration):
     reserves_manager = ReservesManager.deploy(pool_configuration, {"from": account})
 
     return reserves_manager
+
+
+@pytest.fixture()
+def borrow(supply, dai, pool, set_pool_logic_address, account):
+    pool.borrow(dai, BORROW_AMOUNT, {"from": account})

@@ -22,6 +22,22 @@ def test_only_owner_can_set_pool_configuration_address(pool, pool_configuration)
         pool.setPoolConfigurationAddress(pool_configuration, {"from": non_owner})
 
 
+def test_set_pool_logic_address(set_pool_logic_address, pool, pool_logic):
+
+    # assert
+    assert pool.poolLogic() == pool_logic
+
+
+def test_only_owner_can_set_pool_logic_address(pool, pool_logic):
+
+    # arrange
+    non_owner = get_account(index=2)
+
+    # act / assert
+    with reverts():
+        pool.setPoolConfigurationAddress(pool_logic, {"from": non_owner})
+
+
 def test_supply_null_amount(
     set_pool_configuration_address, add_token, account, pool, dai
 ):
@@ -112,3 +128,48 @@ def test_withdraw_burn_withdrawer_xtoken(withdraw, dai, pool_configuration, acco
 
     # assert
     assert x_token_contract.balanceOf(account) == 0
+
+
+def test_borrow_invalid_amount(supply, dai, pool, set_pool_logic_address, account):
+
+    # arrange
+    amount = Web3.toWei(76, "ether")
+
+    # act
+    return_value = pool.borrow.call(dai, amount, {"from": account})
+
+    # assert
+    assert return_value == 0
+
+
+def test_borrow_valid_amount(supply, dai, pool, set_pool_logic_address, account):
+
+    # arrange
+    amount = Web3.toWei(75, "ether")
+
+    # act
+    return_value = pool.borrow.call(dai, amount, {"from": account})
+
+    # assert
+    assert return_value == amount
+
+
+def test_borrow_transfer_funds_from_xtoken_to_borrower(borrow, pool_configuration, dai):
+
+    # arrange
+    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
+    expected = Web3.toWei(25, "ether")  # 100 supplied - 75 borrowed = 25
+
+    # assert
+    assert dai.balanceOf(x_token_address) == expected
+
+
+def test_borrow_burn_amount_of_xtoken(borrow, pool_configuration, dai, account):
+
+    # arrange
+    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
+    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
+    expected = Web3.toWei(25, "ether")
+
+    # assert
+    assert x_token_contract.balanceOf(account) == expected
