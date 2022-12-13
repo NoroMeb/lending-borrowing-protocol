@@ -29,12 +29,14 @@ def test_update_utilization_ration(
 ):
 
     # arrange
-    expexted_utilization_ratio = BORROW_AMOUNT / SUPPLY_AMOUNT
+    expexted_utilization_ratio = (BORROW_AMOUNT / SUPPLY_AMOUNT) * 10000  # basis points
 
     # act
     utilization_ration = reserves_manager.updateUtilizationRatio.call(
         dai, {"from": account}
     )
 
+    print(expexted_utilization_ratio)
+
     # assert
-    assert utilization_ration == expexted_utilization_ratio
+    assert utilization_ration == 9

@@ -44,7 +44,11 @@ contract ReservesManager {
         if (totalDeposited == 0) {
             utilizationRatio = 0;
         } else {
-            utilizationRatio = totalBorrowed / totalDeposited;
+            require(
+                (totalDeposited / 10000) * 10000 == totalDeposited,
+                "too small"
+            );
+            utilizationRatio = (totalBorrowed * 10000) / totalDeposited;
         }
 
         return utilizationRatio;
