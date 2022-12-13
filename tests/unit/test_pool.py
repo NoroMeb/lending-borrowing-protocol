@@ -1,7 +1,7 @@
 from scripts.utils import get_account
 from brownie import reverts, Contract, XToken
 from web3 import Web3
-from conftest import SUPPLY_AMOUNT, WITHDRAW_AMOUNT
+from conftest import SUPPLY_AMOUNT, WITHDRAW_AMOUNT, BORROW_AMOUNT
 
 
 def test_set_pool_configuration_address(
@@ -82,6 +82,16 @@ def test_supply_mint_xtoken_to_supplier(supply, account, dai, pool_configuration
     assert x_token_contract.balanceOf(account) == SUPPLY_AMOUNT
 
 
+def test_supply_increase_total_deposited(supply, pool_configuration, dai, account):
+
+    # arrange
+    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
+    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
+
+    # assert
+    assert x_token_contract.getTotalDeposited() == SUPPLY_AMOUNT
+
+
 def test_borrow_invalid_amount(supply, dai, pool, set_pool_logic_address, account):
 
     # arrange
@@ -125,6 +135,16 @@ def test_borrow_burn_amount_of_xtoken(borrow, pool_configuration, dai, account):
 
     # assert
     assert x_token_contract.balanceOf(account) == expected
+
+
+def test_borrow_increase_total_borrowed(borrow, pool_configuration, dai, account):
+
+    # arrange
+    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
+    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
+
+    # assert
+    assert x_token_contract.getTotalBorrowed() == BORROW_AMOUNT
 
 
 def test_withdraw_invalid_amount(
@@ -183,3 +203,13 @@ def test_withdraw_burn_amount_of_xtoken(withdraw, pool_configuration, dai, accou
 
     # assert
     assert x_token_contract.balanceOf(account) == 0
+
+
+def test_withdraw_decrease_total_deposited(withdraw, pool_configuration, dai):
+
+    # arrange
+    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
+    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
+
+    # assert
+    assert x_token_contract.getTotalDeposited() == 0
