@@ -1,11 +1,13 @@
 dependecies:
   - OpenZeppelin/openzeppelin-contracts@4.8.0
   - smartcontractkit/chainlink-brownie-contracts@0.2.1
+  - NoroMeb/ds-math@0.0.1
 compiler:
   solc:
     remappings:
       - "@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.8.0"
       - "@chainlink=smartcontractkit/chainlink-brownie-contracts@0.2.1"
+      - "@ds-math=NoroMeb/ds-math@0.0.1"
 dotenv: .env
 networks:
   default: development
