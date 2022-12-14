@@ -123,7 +123,7 @@ def test_borrow_transfer_funds_from_xtoken_to_borrower(borrow, pool_configuratio
     expected = Web3.toWei(25, "ether")  # 100 supplied - 75 borrowed = 25
 
     # assert
-    assert dai.balanceOf(x_token_address) == expected
+    assert dai.balanceOf(x_token_address) == SUPPLY_AMOUNT - BORROW_AMOUNT
 
 
 def test_borrow_burn_amount_of_xtoken(borrow, pool_configuration, dai, account):
@@ -134,7 +134,7 @@ def test_borrow_burn_amount_of_xtoken(borrow, pool_configuration, dai, account):
     expected = Web3.toWei(25, "ether")
 
     # assert
-    assert x_token_contract.balanceOf(account) == expected
+    assert x_token_contract.balanceOf(account) == SUPPLY_AMOUNT - BORROW_AMOUNT
 
 
 def test_borrow_increase_total_borrowed(borrow, pool_configuration, dai, account):

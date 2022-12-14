@@ -4,14 +4,22 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IXToken.sol";
 import "./PoolConfiguration.sol";
+import "@ds-math/src/math.sol";
 
-contract ReservesManager {
+contract ReservesManager is DSMath {
     PoolConfiguration public poolConfiguration;
-    uint256 public amountBorrowed;
-    uint256 public utilizationRatio;
 
-    constructor(address _poolConfigurationAddress) public {
+    uint256 public immutable interestRateSlope;
+    uint256 public immutable baseVariableBorrowRate;
+
+    constructor(
+        address _poolConfigurationAddress,
+        uint256 _interestRateSlope,
+        uint256 _baseVariableBorrowRate
+    ) public {
         poolConfiguration = PoolConfiguration(_poolConfigurationAddress);
+        interestRateSlope = _interestRateSlope;
+        baseVariableBorrowRate = _baseVariableBorrowRate;
     }
 
     function getReserveBalance(address _underlyingAsset)
@@ -35,6 +43,7 @@ contract ReservesManager {
         public
         returns (uint256)
     {
+        uint256 utilizationRatio;
         address xtoken = poolConfiguration.underlyingAssetToXtoken(
             _underlyingAsset
         );
@@ -44,13 +53,23 @@ contract ReservesManager {
         if (totalDeposited == 0) {
             utilizationRatio = 0;
         } else {
-            require(
-                (totalDeposited / 10000) * 10000 == totalDeposited,
-                "too small"
-            );
-            utilizationRatio = (totalBorrowed * 10000) / totalDeposited;
+            utilizationRatio = wdiv(totalBorrowed, totalDeposited) * 100;
         }
 
         return utilizationRatio;
+    }
+
+    function updateVariableBorrowRate(address _underlyingAsset)
+        public
+        returns (uint256)
+    {
+        uint256 utilizationRatio = updateUtilizationRatio(_underlyingAsset);
+
+        uint256 variableBorrowRate = add(
+            baseVariableBorrowRate,
+            (wmul(wdiv(utilizationRatio, 100 * 10**18), interestRateSlope))
+        );
+
+        return variableBorrowRate;
     }
 }

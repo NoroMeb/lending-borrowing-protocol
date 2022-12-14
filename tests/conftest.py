@@ -17,6 +17,9 @@ PRICE = 10
 SUPPLY_AMOUNT = Web3.toWei(100, "ether")
 BORROW_AMOUNT = Web3.toWei(75, "ether")
 WITHDRAW_AMOUNT = SUPPLY_AMOUNT
+OPTIMAL_UTILIZATION = Web3.toWei(80, "ether")
+INTEREST_RATE_SLOPE = Web3.toWei(4, "ether")
+BASE_VARIABLE_BORROW_RATE = Web3.toWei(0, "ether")
 
 
 @pytest.fixture()
@@ -128,7 +131,12 @@ def price_oracle(account, mock_v3_aggregator):
 
 @pytest.fixture()
 def reserves_manager(account, pool_configuration):
-    reserves_manager = ReservesManager.deploy(pool_configuration, {"from": account})
+    reserves_manager = ReservesManager.deploy(
+        pool_configuration,
+        INTEREST_RATE_SLOPE,
+        BASE_VARIABLE_BORROW_RATE,
+        {"from": account},
+    )
 
     return reserves_manager
 
