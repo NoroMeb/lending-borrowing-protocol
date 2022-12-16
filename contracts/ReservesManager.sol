@@ -29,7 +29,7 @@ contract ReservesManager is DSMath {
     {
         require(
             poolConfiguration.isAvailable(_underlyingAsset),
-            "Token not available"
+            "token not available"
         );
         address reserve = poolConfiguration.underlyingAssetToXtoken(
             _underlyingAsset
