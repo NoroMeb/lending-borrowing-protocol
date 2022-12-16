@@ -10,6 +10,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract Pool is Ownable {
     PoolConfiguration public poolConfiguration;
     PoolLogic public poolLogic;
+    mapping(address => mapping(address => uint256))
+        internal userToAssetToAmountBorrowed;
 
     function setPoolConfigurationAddress(address _poolConfigurationAddress)
         external
@@ -44,6 +46,7 @@ contract Pool is Ownable {
         } else {
             IXToken(xtoken).transferUnderlyingAssetTo(msg.sender, _amount);
             IXToken(xtoken).burn(msg.sender, _amount);
+            userToAssetToAmountBorrowed[msg.sender][_asset] = _amount;
             uint256 totalBorrowed = IXToken(xtoken).getTotalBorrowed();
             totalBorrowed = totalBorrowed + _amount;
             IXToken(xtoken).setTotalBorrowed(totalBorrowed);
