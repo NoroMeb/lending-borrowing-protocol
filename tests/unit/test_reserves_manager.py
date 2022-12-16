@@ -35,20 +35,20 @@ def test_get_reserve_balance_of_non_available_token(reserves_manager, supply, li
         reserves_manager.getReserveBalance(link)
 
 
-def test_update_utilization_ration(
+def test_update_utilization_rate(
     borrow, reserves_manager, dai, account, pool_configuration
 ):
 
     # arrange
-    expexted_utilization_ratio = (BORROW_AMOUNT / SUPPLY_AMOUNT) * 100  # basis points
+    expexted_utilization_rate = (BORROW_AMOUNT / SUPPLY_AMOUNT) * 100  # basis points
 
     # act
-    utilization_ration = reserves_manager.updateUtilizationRatio.call(
+    utilization_rate = reserves_manager.updateUtilizationRate.call(
         dai, {"from": account}
     )
 
     # assert
-    assert utilization_ration / 10**18 == expexted_utilization_ratio
+    assert utilization_rate / 10**18 == expexted_utilization_rate
 
 
 def test_update_variable_borrow_rate(

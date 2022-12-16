@@ -39,11 +39,11 @@ contract ReservesManager is DSMath {
         return reserveBalance;
     }
 
-    function updateUtilizationRatio(address _underlyingAsset)
+    function updateUtilizationRate(address _underlyingAsset)
         public
         returns (uint256)
     {
-        uint256 utilizationRatio;
+        uint256 utilizationRate;
         address xtoken = poolConfiguration.underlyingAssetToXtoken(
             _underlyingAsset
         );
@@ -51,23 +51,23 @@ contract ReservesManager is DSMath {
         uint256 totalDeposited = IXToken(xtoken).getTotalDeposited();
 
         if (totalDeposited == 0) {
-            utilizationRatio = 0;
+            utilizationRate = 0;
         } else {
-            utilizationRatio = wdiv(totalBorrowed, totalDeposited) * 100;
+            utilizationRate = wdiv(totalBorrowed, totalDeposited) * 100;
         }
 
-        return utilizationRatio;
+        return utilizationRate;
     }
 
     function updateVariableBorrowRate(address _underlyingAsset)
         public
         returns (uint256)
     {
-        uint256 utilizationRatio = updateUtilizationRatio(_underlyingAsset);
+        uint256 utilizationRate = updateUtilizationRate(_underlyingAsset);
 
         uint256 variableBorrowRate = add(
             baseVariableBorrowRate,
-            (wmul(wdiv(utilizationRatio, 100 * 10**18), interestRateSlope))
+            (wmul(wdiv(utilizationRate, 100 * 10**18), interestRateSlope))
         );
 
         return variableBorrowRate;
