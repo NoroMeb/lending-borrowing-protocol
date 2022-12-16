@@ -149,3 +149,9 @@ def borrow(supply, dai, pool, set_pool_logic_address, account):
 @pytest.fixture()
 def withdraw(supply, dai, pool, set_pool_logic_address, account):
     pool.withdraw(dai, WITHDRAW_AMOUNT, {"from": account})
+
+
+@pytest.fixture()
+def repay(supply, borrow, pool, set_pool_logic_address, dai, account):
+    dai.approve(pool, BORROW_AMOUNT, {"from": account})
+    pool.repay(dai, BORROW_AMOUNT, {"from": account})

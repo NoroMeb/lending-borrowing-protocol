@@ -11,7 +11,7 @@ contract Pool is Ownable {
     PoolConfiguration public poolConfiguration;
     PoolLogic public poolLogic;
     mapping(address => mapping(address => uint256))
-        internal userToAssetToAmountBorrowed;
+        internal userToAssetToDebtAmount;
 
     function setPoolConfigurationAddress(address _poolConfigurationAddress)
         external
@@ -26,7 +26,7 @@ contract Pool is Ownable {
 
     function supply(address _asset, uint256 _amount) public {
         require(_amount > 0, "insufficient amount");
-        require(poolConfiguration.isAvailable(_asset), "Token not available");
+        require(poolConfiguration.isAvailable(_asset), "token not available");
         address xtoken = poolConfiguration.underlyingAssetToXtoken(_asset);
         IERC20(_asset).transferFrom(msg.sender, xtoken, _amount);
         IXToken(xtoken).mint(msg.sender, _amount);
@@ -46,7 +46,9 @@ contract Pool is Ownable {
         } else {
             IXToken(xtoken).transferUnderlyingAssetTo(msg.sender, _amount);
             IXToken(xtoken).burn(msg.sender, _amount);
-            userToAssetToAmountBorrowed[msg.sender][_asset] = _amount;
+            userToAssetToDebtAmount[msg.sender][_asset] =
+                userToAssetToDebtAmount[msg.sender][_asset] +
+                _amount;
             uint256 totalBorrowed = IXToken(xtoken).getTotalBorrowed();
             totalBorrowed = totalBorrowed + _amount;
             IXToken(xtoken).setTotalBorrowed(totalBorrowed);
@@ -67,7 +69,6 @@ contract Pool is Ownable {
         } else {
             IXToken(xtoken).transferUnderlyingAssetTo(msg.sender, _amount);
             IXToken(xtoken).burn(msg.sender, _amount);
-
             uint256 totalDeposited = IXToken(xtoken).getTotalDeposited();
             totalDeposited = totalDeposited - _amount;
             IXToken(xtoken).setTotalDeposited(totalDeposited);
@@ -76,5 +77,24 @@ contract Pool is Ownable {
         }
     }
 
-    function repay() public {}
+    function repay(address _asset, uint256 _amount) public {
+        require(_amount > 0, "insufficient amount");
+        require(poolConfiguration.isAvailable(_asset), "token not available");
+        require(
+            userToAssetToDebtAmount[msg.sender][_asset] > 0,
+            "doesnt have a debt to pay"
+        );
+        require(
+            _amount <= userToAssetToDebtAmount[msg.sender][_asset],
+            "the amount exceeds the debt"
+        );
+
+        address xtoken = poolConfiguration.underlyingAssetToXtoken(_asset);
+        IERC20(_asset).transferFrom(msg.sender, xtoken, _amount);
+        IXToken(xtoken).mint(msg.sender, _amount);
+
+        userToAssetToDebtAmount[msg.sender][_asset] =
+            userToAssetToDebtAmount[msg.sender][_asset] -
+            _amount;
+    }
 }

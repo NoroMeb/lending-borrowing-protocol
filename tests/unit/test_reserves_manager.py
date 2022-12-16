@@ -31,7 +31,7 @@ def test_get_reserve_balance(reserves_manager, supply, dai):
 def test_get_reserve_balance_of_non_available_token(reserves_manager, supply, link):
 
     # act / assert
-    with reverts("Token not available"):
+    with reverts("token not available"):
         reserves_manager.getReserveBalance(link)
 
 

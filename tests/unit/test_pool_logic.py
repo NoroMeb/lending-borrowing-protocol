@@ -37,7 +37,7 @@ def test_validate_borrow_non_available_token(supply, pool_logic, account, link):
     amount = Web3.toWei(100, "ether")
 
     # act / assert
-    with reverts("Token not available"):
+    with reverts("token not available"):
         pool_logic.validateBorrow(account, link, amount, {"from": account})
 
 
@@ -78,7 +78,7 @@ def test_validate_withdraw_non_available_token(supply, pool_logic, account, link
     amount = Web3.toWei(50, "ether")
 
     # act / assert
-    with reverts("Token not available"):
+    with reverts("token not available"):
         pool_logic.validateWithdraw(account, link, amount, {"from": account})
 
 

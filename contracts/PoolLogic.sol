@@ -55,7 +55,7 @@ contract PoolLogic {
         require(_amount > 0, "Amount must be greater than 0");
         require(
             poolConfiguration.isAvailable(_underlyingAsset),
-            "Token not available"
+            "token not available"
         );
 
         uint256 userBalanceInUSD = getUserBalanceInUSD(
@@ -82,7 +82,7 @@ contract PoolLogic {
         require(_amount > 0, "Amount must be greater than 0");
         require(
             poolConfiguration.isAvailable(_underlyingAsset),
-            "Token not available"
+            "token not available"
         );
 
         address xtoken = poolConfiguration.underlyingAssetToXtoken(

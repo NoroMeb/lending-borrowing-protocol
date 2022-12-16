@@ -56,7 +56,7 @@ def test_supply_non_available_token(
     link.approve(pool, amount, {"from": account})
 
     # act / assert
-    with reverts("Token not available"):
+    with reverts("token not available"):
         pool.supply(link, amount, {"from": account})
 
 
@@ -137,6 +137,15 @@ def test_borrow_burn_amount_of_xtoken(borrow, pool_configuration, dai, account):
     assert x_token_contract.balanceOf(account) == SUPPLY_AMOUNT - BORROW_AMOUNT
 
 
+def test_borrow_increase_user_debt_amount(borrow, pool, account, dai):
+
+    # assert
+    assert (
+        pool.getUserToAssetToDebtAmount(account, dai, {"from": account})
+        == BORROW_AMOUNT
+    )
+
+
 def test_borrow_increase_total_borrowed(borrow, pool_configuration, dai, account):
 
     # arrange
@@ -213,3 +222,65 @@ def test_withdraw_decrease_total_deposited(withdraw, pool_configuration, dai):
 
     # assert
     assert x_token_contract.getTotalDeposited() == 0
+
+
+def test_repay_invalid_insufficient_amount(borrow, pool, dai, account):
+
+    # act / assert
+    with reverts("insufficient amount"):
+        pool.repay(dai, 0, {"from": account})
+
+
+def test_repay_non_available_token(borrow, account, pool, link):
+
+    # arrange
+    link.approve(pool, BORROW_AMOUNT, {"from": account})
+
+    # act / assert
+    with reverts("token not available"):
+        pool.repay(link, BORROW_AMOUNT, {"from": account})
+
+
+def test_repay_with_no_debt(supply, account, pool, dai):
+
+    # act / assert
+    with reverts("doesnt have a debt to pay"):
+        pool.repay(dai, BORROW_AMOUNT, {"from": account})
+
+
+def test_repay_amount_exceeds_debt(borrow, account, pool, dai):
+
+    # arrange
+    amount = Web3.toWei(85, "ether")
+    dai.approve(pool, amount, {"from": account})
+
+    # act / assert
+    with reverts("the amount exceeds the debt"):
+        pool.repay(dai, amount, {"from": account})
+
+
+def test_repay_transfer_funds_from_user_account_to_xtoken(
+    repay, account, pool, pool_configuration, dai
+):
+
+    # arrange
+    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
+
+    # assert
+    assert dai.balanceOf(x_token_address) == SUPPLY_AMOUNT
+
+
+def test_repay_mint_xtoken_to_user(repay, account, pool, pool_configuration, dai):
+
+    # arrange
+    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
+    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
+
+    # assert
+    assert x_token_contract.balanceOf(account) == SUPPLY_AMOUNT
+
+
+def test_repay_decrease_user_debt_amount(repay, pool, account, dai):
+
+    # assert
+    assert pool.getUserToAssetToDebtAmount(account, dai, {"from": account}) == 0
