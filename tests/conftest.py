@@ -90,8 +90,8 @@ def mock_v3_aggregator(account):
 
 @pytest.fixture()
 def add_token(account, dai, mock_v3_aggregator, pool_configuration):
-    name = "xDAI"
-    symbol = "xDAI"
+    name = "DAI"
+    symbol = "DAI"
     underlying_asset = dai
     price_feed_address = mock_v3_aggregator
     decimals = 18
@@ -100,9 +100,9 @@ def add_token(account, dai, mock_v3_aggregator, pool_configuration):
         name, symbol, underlying_asset, price_feed_address, decimals, {"from": account}
     )
 
-    x_token, price_oracle = add_token_tx.return_value
+    x_token, debt_token, price_oracle = add_token_tx.return_value
 
-    return x_token, price_oracle
+    return x_token, debt_token, price_oracle
 
 
 @pytest.fixture()

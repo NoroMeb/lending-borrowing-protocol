@@ -6,8 +6,8 @@ from conftest import SUPPLY_AMOUNT
 def test_xtoken_constructor(account, dai, pool):
 
     # arrange
-    name = "xTEST"
-    symbol = "xTEST"
+    name = "TEST"
+    symbol = "TEST"
     underlying_asset = dai
     pool_address = pool
 
@@ -18,12 +18,12 @@ def test_xtoken_constructor(account, dai, pool):
 
     # assert
     assert x_token.name() == name
-    assert x_token.symbol() == name
+    assert x_token.symbol() == symbol
     assert x_token.poolAddress() == pool_address
     assert x_token.underlyingAsset() == underlying_asset
 
 
-def test_mint(add_token, account, pool, pool_configuration, dai):
+def test_mint_xtoken(add_token, account, pool, pool_configuration, dai):
 
     # arrange
     x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
@@ -37,7 +37,7 @@ def test_mint(add_token, account, pool, pool_configuration, dai):
     assert x_token_contract.balanceOf(account) == amount
 
 
-def test_only_pool_can_mint(add_token, account, pool, pool_configuration, dai):
+def test_only_pool_can_mint_xtoken(add_token, account, pool, pool_configuration, dai):
 
     # arrange
     x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
@@ -49,7 +49,7 @@ def test_only_pool_can_mint(add_token, account, pool, pool_configuration, dai):
         x_token_contract.mint(account, amount, {"from": account})
 
 
-def test_burn(add_token, account, pool, pool_configuration, dai):
+def test_burn_xtoken(add_token, account, pool, pool_configuration, dai):
 
     # arrange
     x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
@@ -64,7 +64,7 @@ def test_burn(add_token, account, pool, pool_configuration, dai):
     assert x_token_contract.balanceOf(account) == 0
 
 
-def test_only_pool_can_mint(add_token, account, pool, pool_configuration, dai):
+def test_only_pool_can_burn_xtoken(add_token, account, pool, pool_configuration, dai):
 
     # arrange
     x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
