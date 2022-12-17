@@ -7,18 +7,20 @@ contract PriceOracle {
     AggregatorV3Interface public priceFeed;
     uint256 public decimals;
 
-    constructor(address _priceFeedAddress, uint256 _decimals) public {
+    constructor(address _priceFeedAddress, uint256 _decimals) {
         priceFeed = AggregatorV3Interface(_priceFeedAddress);
         decimals = _decimals;
     }
 
-    function getLatestPrice() public returns (uint256) {
+    function getLatestPrice() public view returns (uint256) {
         (, int256 price, , , ) = priceFeed.latestRoundData();
         if (decimals == 8) {
-            return uint256(price / 1e8);
+            uint256 latestPrice = uint256(price / 1e8);
+            return latestPrice;
         }
         if (decimals == 18) {
-            return uint256(price / 1e18);
+            uint256 latestPrice = uint256(price / 1e18);
+            return latestPrice;
         }
     }
 }
