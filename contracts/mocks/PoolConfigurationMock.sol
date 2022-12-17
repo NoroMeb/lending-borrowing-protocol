@@ -4,13 +4,17 @@ pragma solidity ^0.8.12;
 import "./../PoolConfiguration.sol";
 
 contract PoolConfigurationMock is PoolConfiguration {
-    constructor(address _poolAddress) public PoolConfiguration(_poolAddress) {}
+    constructor(address _poolAddress) PoolConfiguration(_poolAddress) {}
 
-    function getXToken() public returns (XToken) {
+    function getXToken() public view returns (XToken) {
         return xtoken;
     }
 
-    function getPriceOracle() public returns (PriceOracle) {
+    function getDebtToken() public view returns (DebtToken) {
+        return debtToken;
+    }
+
+    function getPriceOracle() public view returns (PriceOracle) {
         return priceOracle;
     }
 }
