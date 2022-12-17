@@ -12,15 +12,15 @@ def test_debt_token_constructor(account, dai, pool):
     pool_address = pool
 
     # act
-    x_token = DebtToken.deploy(
+    debt_token = DebtToken.deploy(
         name, symbol, underlying_asset, pool_address, {"from": account}
     )
 
     # assert
-    assert x_token.name() == name
-    assert x_token.symbol() == name
-    assert x_token.poolAddress() == pool_address
-    assert x_token.underlyingAsset() == underlying_asset
+    assert debt_token.name() == name
+    assert debt_token.symbol() == name
+    assert debt_token.poolAddress() == pool_address
+    assert debt_token.underlyingAsset() == underlying_asset
 
 
 def test_mint_debt_token(add_token, account, pool, pool_configuration, dai):
@@ -191,3 +191,48 @@ def test_decrease_allowance_debt_token_reverts(
     # act / assert
     with reverts("ALLOWANCE_NOT_SUPPORTED"):
         debt_token_contract.decreaseAllowance(spender, amount, {"from": account})
+
+
+def test_get_total_borrowed(add_token, pool_configuration, dai):
+
+    # arrange
+    debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
+    debt_token_contract = Contract.from_abi(
+        "DebtToken", debt_token_address, DebtToken.abi
+    )
+
+    # act
+    total_borrowed = debt_token_contract.getTotalBorrowed()
+
+    # assert
+    assert total_borrowed == debt_token_contract.totalBorrowed()
+
+
+def test_set_total_borrowed(add_token, pool_configuration, dai, pool):
+
+    # arrange
+    debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
+    debt_token_contract = Contract.from_abi(
+        "DebtToken", debt_token_address, DebtToken.abi
+    )
+    value = Web3.toWei(100, "ether")
+
+    # act
+    debt_token_contract.setTotalBorrowed(value, {"from": pool})
+
+    # assert
+    assert debt_token_contract.getTotalBorrowed() == value
+
+
+def test_only_pool_can_set_total_borrowed(add_token, pool_configuration, dai, account):
+
+    # arrange
+    debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
+    debt_token_contract = Contract.from_abi(
+        "DebtToken", debt_token_address, DebtToken.abi
+    )
+    value = Web3.toWei(100, "ether")
+
+    # act / assert
+    with reverts("caller must be pool"):
+        debt_token_contract.setTotalBorrowed(value, {"from": account})

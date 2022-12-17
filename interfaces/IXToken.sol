@@ -10,10 +10,6 @@ interface IXToken is IERC20 {
     function transferUnderlyingAssetTo(address _account, uint256 _amount)
         external;
 
-    function getTotalBorrowed() external view returns (uint256);
-
-    function setTotalBorrowed(uint256 _totalBorrowed) external;
-
     function getTotalDeposited() external view returns (uint256);
 
     function setTotalDeposited(uint256 _totalDeposited) external;

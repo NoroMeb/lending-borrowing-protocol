@@ -3,6 +3,7 @@ pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IXToken.sol";
+import "../interfaces/IDebtToken.sol";
 import "./PoolConfiguration.sol";
 import "@ds-math/src/math.sol";
 
@@ -16,7 +17,7 @@ contract ReservesManager is DSMath {
         address _poolConfigurationAddress,
         uint256 _interestRateSlope,
         uint256 _baseVariableBorrowRate
-    ) public {
+    ) {
         poolConfiguration = PoolConfiguration(_poolConfigurationAddress);
         interestRateSlope = _interestRateSlope;
         baseVariableBorrowRate = _baseVariableBorrowRate;
@@ -41,14 +42,18 @@ contract ReservesManager is DSMath {
 
     function updateUtilizationRate(address _underlyingAsset)
         public
+        view
         returns (uint256)
     {
         uint256 utilizationRate;
         address xtoken = poolConfiguration.underlyingAssetToXtoken(
             _underlyingAsset
         );
-        uint256 totalBorrowed = IXToken(xtoken).getTotalBorrowed();
+        address debtToken = poolConfiguration.underlyingAssetToDebtToken(
+            _underlyingAsset
+        );
         uint256 totalDeposited = IXToken(xtoken).getTotalDeposited();
+        uint256 totalBorrowed = IDebtToken(debtToken).getTotalBorrowed();
 
         if (totalDeposited == 0) {
             utilizationRate = 0;
@@ -61,6 +66,7 @@ contract ReservesManager is DSMath {
 
     function updateVariableBorrowRate(address _underlyingAsset)
         public
+        view
         returns (uint256)
     {
         uint256 utilizationRate = updateUtilizationRate(_underlyingAsset);

@@ -5,13 +5,12 @@ import "./PoolLogic.sol";
 import "./PoolConfiguration.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/IXToken.sol";
+import "../interfaces/IDebtToken.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Pool is Ownable {
     PoolConfiguration public poolConfiguration;
     PoolLogic public poolLogic;
-    mapping(address => mapping(address => uint256))
-        internal userToAssetToDebtAmount;
 
     function setPoolConfigurationAddress(address _poolConfigurationAddress)
         external
@@ -38,6 +37,9 @@ contract Pool is Ownable {
 
     function borrow(address _asset, uint256 _amount) public returns (uint256) {
         address xtoken = poolConfiguration.underlyingAssetToXtoken(_asset);
+        address debtToken = poolConfiguration.underlyingAssetToDebtToken(
+            _asset
+        );
 
         bool isValid = poolLogic.validateBorrow(msg.sender, _asset, _amount);
 
@@ -46,12 +48,12 @@ contract Pool is Ownable {
         } else {
             IXToken(xtoken).transferUnderlyingAssetTo(msg.sender, _amount);
             IXToken(xtoken).burn(msg.sender, _amount);
-            userToAssetToDebtAmount[msg.sender][_asset] =
-                userToAssetToDebtAmount[msg.sender][_asset] +
-                _amount;
-            uint256 totalBorrowed = IXToken(xtoken).getTotalBorrowed();
+
+            IDebtToken(debtToken).mint(msg.sender, _amount);
+
+            uint256 totalBorrowed = IDebtToken(debtToken).getTotalBorrowed();
             totalBorrowed = totalBorrowed + _amount;
-            IXToken(xtoken).setTotalBorrowed(totalBorrowed);
+            IDebtToken(debtToken).setTotalBorrowed(totalBorrowed);
             return _amount;
         }
     }
@@ -80,21 +82,22 @@ contract Pool is Ownable {
     function repay(address _asset, uint256 _amount) public {
         require(_amount > 0, "insufficient amount");
         require(poolConfiguration.isAvailable(_asset), "token not available");
-        require(
-            userToAssetToDebtAmount[msg.sender][_asset] > 0,
-            "doesnt have a debt to pay"
+        address debtToken = poolConfiguration.underlyingAssetToDebtToken(
+            _asset
         );
         require(
-            _amount <= userToAssetToDebtAmount[msg.sender][_asset],
+            IERC20(debtToken).balanceOf(msg.sender) > 0,
+            "doesnt have a debt to pay"
+        );
+
+        require(
+            _amount <= IERC20(debtToken).balanceOf(msg.sender),
             "the amount exceeds the debt"
         );
 
         address xtoken = poolConfiguration.underlyingAssetToXtoken(_asset);
         IERC20(_asset).transferFrom(msg.sender, xtoken, _amount);
         IXToken(xtoken).mint(msg.sender, _amount);
-
-        userToAssetToDebtAmount[msg.sender][_asset] =
-            userToAssetToDebtAmount[msg.sender][_asset] -
-            _amount;
+        IDebtToken(debtToken).burn(msg.sender, _amount);
     }
 }

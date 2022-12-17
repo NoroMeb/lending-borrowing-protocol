@@ -7,6 +7,8 @@ contract DebtToken is ERC20 {
     address public poolAddress;
     address public underlyingAsset;
 
+    uint256 public totalBorrowed;
+
     modifier onlyPool() {
         require(_msgSender() == poolAddress, "caller must be pool");
         _;
@@ -95,5 +97,13 @@ contract DebtToken is ERC20 {
         spender;
         subtractedValue;
         revert("ALLOWANCE_NOT_SUPPORTED");
+    }
+
+    function getTotalBorrowed() external view returns (uint256) {
+        return totalBorrowed;
+    }
+
+    function setTotalBorrowed(uint256 _totalBorrowed) external onlyPool {
+        totalBorrowed = _totalBorrowed;
     }
 }

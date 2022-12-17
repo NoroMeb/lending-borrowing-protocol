@@ -108,45 +108,6 @@ def test_only_pool_can_transfer_underlying_asset(
         x_token_contract.transferUnderlyingAssetTo(account, amount, {"from": account})
 
 
-def test_get_total_borrowed(add_token, pool_configuration, dai):
-
-    # arrange
-    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
-    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
-
-    # act
-    total_borrowed = x_token_contract.getTotalBorrowed()
-
-    # assert
-    assert total_borrowed == x_token_contract.totalBorrowed()
-
-
-def test_set_total_borrowed(add_token, pool_configuration, dai, pool):
-
-    # arrange
-    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
-    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
-    value = Web3.toWei(100, "ether")
-
-    # act
-    x_token_contract.setTotalBorrowed(value, {"from": pool})
-
-    # assert
-    assert x_token_contract.getTotalBorrowed() == value
-
-
-def test_only_pool_can_set_total_borrowed(add_token, pool_configuration, dai, account):
-
-    # arrange
-    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
-    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
-    value = Web3.toWei(100, "ether")
-
-    # act / assert
-    with reverts("caller must be pool"):
-        x_token_contract.setTotalBorrowed(value, {"from": account})
-
-
 def test_get_total_deposited(add_token, pool_configuration, dai):
 
     # arrange

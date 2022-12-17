@@ -1,5 +1,5 @@
 from scripts.utils import get_account
-from brownie import reverts, Contract, XToken
+from brownie import reverts, Contract, XToken, DebtToken
 from web3 import Web3
 from conftest import SUPPLY_AMOUNT, WITHDRAW_AMOUNT, BORROW_AMOUNT
 
@@ -137,23 +137,28 @@ def test_borrow_burn_amount_of_xtoken(borrow, pool_configuration, dai, account):
     assert x_token_contract.balanceOf(account) == SUPPLY_AMOUNT - BORROW_AMOUNT
 
 
-def test_borrow_increase_user_debt_amount(borrow, pool, account, dai):
+def test_borrow_mint_debt_token(borrow, pool_configuration, dai, account):
+
+    # arrange
+    debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
+    debt_token_contract = Contract.from_abi(
+        "DebtToken", debt_token_address, DebtToken.abi
+    )
 
     # assert
-    assert (
-        pool.getUserToAssetToDebtAmount(account, dai, {"from": account})
-        == BORROW_AMOUNT
-    )
+    assert debt_token_contract.balanceOf(account) == BORROW_AMOUNT
 
 
 def test_borrow_increase_total_borrowed(borrow, pool_configuration, dai, account):
 
     # arrange
-    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
-    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
+    debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
+    debt_token_contract = Contract.from_abi(
+        "DebtToken", debt_token_address, DebtToken.abi
+    )
 
     # assert
-    assert x_token_contract.getTotalBorrowed() == BORROW_AMOUNT
+    assert debt_token_contract.getTotalBorrowed() == BORROW_AMOUNT
 
 
 def test_withdraw_invalid_amount(
@@ -280,7 +285,13 @@ def test_repay_mint_xtoken_to_user(repay, account, pool, pool_configuration, dai
     assert x_token_contract.balanceOf(account) == SUPPLY_AMOUNT
 
 
-def test_repay_decrease_user_debt_amount(repay, pool, account, dai):
+def test_repay_burn_debt_token(repay, account, pool_configuration, dai):
+
+    # arrange
+    debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
+    debt_token_contract = Contract.from_abi(
+        "DebtToken", debt_token_address, DebtToken.abi
+    )
 
     # assert
-    assert pool.getUserToAssetToDebtAmount(account, dai, {"from": account}) == 0
+    assert debt_token_contract.balanceOf(account) == 0

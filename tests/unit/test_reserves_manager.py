@@ -1,4 +1,4 @@
-from brownie import ReservesManager, reverts, XToken, Contract
+from brownie import ReservesManager, reverts, XToken, Contract, DebtToken
 from conftest import (
     SUPPLY_AMOUNT,
     BORROW_AMOUNT,
@@ -58,16 +58,22 @@ def test_update_variable_borrow_rate(
     # arrange
     x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
     x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
+
+    debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
+    debt_token_contract = Contract.from_abi(
+        "DebtToken", debt_token_address, DebtToken.abi
+    )
+
     total_deposited = Web3.toWei(100, "ether")
     total_borrowed = Web3.toWei(0.1, "ether")
 
     x_token_contract.setTotalDeposited(total_deposited, {"from": pool})
-    x_token_contract.setTotalBorrowed(total_borrowed, {"from": pool})
+    debt_token_contract.setTotalBorrowed(total_borrowed, {"from": pool})
 
     expected_variable_borrow_rate = 0.004
 
     # act
-    variable_borrow_rate = reserves_manager.updateVariableBorrowRate.call(
+    variable_borrow_rate = reserves_manager.updateVariableBorrowRate(
         dai, {"from": account}
     )
 

@@ -9,7 +9,7 @@ contract PoolLogic {
     uint256 public constant maxAmountRate = 7500; //in basis points
     PoolConfiguration public poolConfiguration;
 
-    constructor(address _poolConfigurationAddress) public {
+    constructor(address _poolConfigurationAddress) {
         poolConfiguration = PoolConfiguration(_poolConfigurationAddress);
     }
 
@@ -78,7 +78,7 @@ contract PoolLogic {
         address _account,
         address _underlyingAsset,
         uint256 _amount
-    ) public returns (bool) {
+    ) public view returns (bool) {
         require(_amount > 0, "Amount must be greater than 0");
         require(
             poolConfiguration.isAvailable(_underlyingAsset),

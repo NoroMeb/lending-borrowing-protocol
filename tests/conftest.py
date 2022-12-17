@@ -2,7 +2,7 @@ import pytest
 from web3 import Web3
 from scripts.utils import get_account, LOCAL_BLOCKCHAIN_ENVIRONMENTS
 from brownie import (
-    PoolMock,
+    Pool,
     PoolConfigurationMock,
     MockDai,
     network,
@@ -38,7 +38,7 @@ def account():
 @pytest.fixture()
 def pool(account):
 
-    pool = PoolMock.deploy({"from": account})
+    pool = Pool.deploy({"from": account})
 
     return pool
 
