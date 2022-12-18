@@ -79,3 +79,31 @@ def test_update_variable_borrow_rate(
 
     # assert
     assert variable_borrow_rate / 10**18 == expected_variable_borrow_rate
+
+
+def test_update_state(
+    add_token, reserves_manager, dai, account, pool_configuration, pool
+):
+
+    # arrange
+    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
+    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
+
+    debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
+    debt_token_contract = Contract.from_abi(
+        "DebtToken", debt_token_address, DebtToken.abi
+    )
+
+    total_deposited = Web3.toWei(100, "ether")
+    total_borrowed = Web3.toWei(71.54, "ether")
+
+    x_token_contract.setTotalDeposited(total_deposited, {"from": pool})
+    debt_token_contract.setTotalBorrowed(total_borrowed, {"from": pool})
+
+    expected_variable_borrow_rate = 3.577
+
+    # act
+    variable_borrow_rate = reserves_manager.updateState(dai, {"from": account})
+
+    # assert
+    assert variable_borrow_rate / 10**18 == expected_variable_borrow_rate

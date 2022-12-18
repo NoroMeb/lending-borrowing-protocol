@@ -78,4 +78,10 @@ contract ReservesManager is DSMath {
 
         return variableBorrowRate;
     }
+
+    function updateState(address _underlyingAsset) public view {
+        uint256 lastUpdateTime = block.timestamp;
+        uint256 secondsSinceLastupdate = block.timestamp - lastUpdateTime;
+        uint256 variableBorrowRate = updateVariableBorrowRate(_underlyingAsset);
+    }
 }
