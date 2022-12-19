@@ -1,4 +1,4 @@
-from brownie import ReservesManager, reverts, XToken, Contract, DebtToken
+from brownie import ReservesManager, reverts, XToken, Contract, DebtToken, chain
 from conftest import (
     SUPPLY_AMOUNT,
     BORROW_AMOUNT,
@@ -6,6 +6,7 @@ from conftest import (
     BASE_VARIABLE_BORROW_RATE,
 )
 from web3 import Web3
+import time
 
 
 def test_reserves_manager_constructor(account, supply, pool_configuration):
@@ -70,7 +71,7 @@ def test_update_variable_borrow_rate(
     x_token_contract.setTotalDeposited(total_deposited, {"from": pool})
     debt_token_contract.setTotalBorrowed(total_borrowed, {"from": pool})
 
-    expected_variable_borrow_rate = 0.004
+    expected_variable_borrow_rate = 0.005
 
     # act
     variable_borrow_rate = reserves_manager.updateVariableBorrowRate(
@@ -81,29 +82,19 @@ def test_update_variable_borrow_rate(
     assert variable_borrow_rate / 10**18 == expected_variable_borrow_rate
 
 
-def test_update_state(
-    add_token, reserves_manager, dai, account, pool_configuration, pool
-):
+def test_update_state(borrow, reserves_manager, dai, account, pool_configuration, pool):
 
     # arrange
-    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
-    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
-
-    debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
-    debt_token_contract = Contract.from_abi(
-        "DebtToken", debt_token_address, DebtToken.abi
-    )
-
-    total_deposited = Web3.toWei(100, "ether")
-    total_borrowed = Web3.toWei(71.54, "ether")
-
-    x_token_contract.setTotalDeposited(total_deposited, {"from": pool})
-    debt_token_contract.setTotalBorrowed(total_borrowed, {"from": pool})
-
-    expected_variable_borrow_rate = 3.577
-
+    expectet_variable_rate_per_second = round(3.75 / 31536000, 18)
     # act
-    variable_borrow_rate = reserves_manager.updateState(dai, {"from": account})
+    variable_rate_per_second = reserves_manager.updateState.call(
+        dai, {"from": account}
+    ) / (10**18)
 
     # assert
-    assert variable_borrow_rate / 10**18 == expected_variable_borrow_rate
+    assert variable_rate_per_second == expectet_variable_rate_per_second
+
+
+def test_seconds_per_year(reserves_manager):
+
+    assert reserves_manager.SECONDS_PER_YEAR() == 31536000

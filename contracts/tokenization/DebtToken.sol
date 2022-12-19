@@ -106,4 +106,20 @@ contract DebtToken is ERC20 {
     function setTotalBorrowed(uint256 _totalBorrowed) external onlyPool {
         totalBorrowed = _totalBorrowed;
     }
+
+    function balanceOf(address user)
+        public
+        view
+        virtual
+        override
+        returns (uint256)
+    {
+        uint256 scaledBalance = super.balanceOf(user);
+
+        if (scaledBalance == 0) {
+            return 0;
+        }
+
+        return scaledBalance; // * INDEX;
+    }
 }

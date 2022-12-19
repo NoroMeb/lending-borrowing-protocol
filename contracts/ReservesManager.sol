@@ -13,6 +13,9 @@ contract ReservesManager is DSMath {
     uint256 public immutable interestRateSlope;
     uint256 public immutable baseVariableBorrowRate;
 
+    uint256 lastUpdateTime;
+    uint256 public constant SECONDS_PER_YEAR = 365 days;
+
     constructor(
         address _poolConfigurationAddress,
         uint256 _interestRateSlope,
@@ -79,9 +82,12 @@ contract ReservesManager is DSMath {
         return variableBorrowRate;
     }
 
-    function updateState(address _underlyingAsset) public view {
-        uint256 lastUpdateTime = block.timestamp;
-        uint256 secondsSinceLastupdate = block.timestamp - lastUpdateTime;
+    function updateState(address _underlyingAsset) public returns (uint256) {
+        // uint256 secondsSinceLastupdate = block.timestamp - lastUpdateTime;
         uint256 variableBorrowRate = updateVariableBorrowRate(_underlyingAsset);
+        uint256 variableRatePerSecond = variableBorrowRate / SECONDS_PER_YEAR;
+
+        lastUpdateTime = block.timestamp;
+        return variableRatePerSecond;
     }
 }

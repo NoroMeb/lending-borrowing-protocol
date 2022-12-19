@@ -17,7 +17,6 @@ PRICE = 10
 SUPPLY_AMOUNT = Web3.toWei(100, "ether")
 BORROW_AMOUNT = Web3.toWei(75, "ether")
 WITHDRAW_AMOUNT = SUPPLY_AMOUNT
-OPTIMAL_UTILIZATION = Web3.toWei(80, "ether")
 INTEREST_RATE_SLOPE = Web3.toWei(5, "ether")
 BASE_VARIABLE_BORROW_RATE = Web3.toWei(0, "ether")
 
