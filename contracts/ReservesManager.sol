@@ -15,6 +15,7 @@ contract ReservesManager is DSMath {
 
     uint256 lastUpdateTime;
     uint256 public constant SECONDS_PER_YEAR = 365 days;
+    uint256 internal variableBorrowIndex = 1;
 
     constructor(
         address _poolConfigurationAddress,
@@ -83,11 +84,28 @@ contract ReservesManager is DSMath {
     }
 
     function updateState(address _underlyingAsset) public returns (uint256) {
-        // uint256 secondsSinceLastupdate = block.timestamp - lastUpdateTime;
+        uint256 secondsSinceLastupdate = block.timestamp - lastUpdateTime;
         uint256 variableBorrowRate = updateVariableBorrowRate(_underlyingAsset);
-        uint256 variableRatePerSecond = variableBorrowRate / SECONDS_PER_YEAR;
+        uint256 variableBorrowRatePerSecond = variableBorrowRate /
+            SECONDS_PER_YEAR;
 
         lastUpdateTime = block.timestamp;
-        return variableRatePerSecond;
+        return variableBorrowRatePerSecond;
+    }
+
+    function updateVariableBorrowIndex(
+        uint256 _variableBorrowRatePerSecond,
+        uint256 _secondsSinceLastupdate
+    ) public returns (uint256) {
+        // variableBorrowIndex = wmul(
+        //     variableBorrowIndex,
+        //     add(1, wmul(_variableBorrowRatePerSecond, _secondsSinceLastupdate))
+        // );
+
+        variableBorrowIndex =
+            variableBorrowIndex *
+            (1 + _variableBorrowRatePerSecond * _secondsSinceLastupdate);
+
+        return variableBorrowIndex;
     }
 }

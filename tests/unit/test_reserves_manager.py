@@ -7,6 +7,7 @@ from conftest import (
 )
 from web3 import Web3
 import time
+import pytest
 
 
 def test_reserves_manager_constructor(account, supply, pool_configuration):
@@ -85,16 +86,36 @@ def test_update_variable_borrow_rate(
 def test_update_state(borrow, reserves_manager, dai, account, pool_configuration, pool):
 
     # arrange
-    expectet_variable_rate_per_second = round(3.75 / 31536000, 18)
+    expectet_variable_rate_per_second = 3.75 / 31536000
+
+    print(expectet_variable_rate_per_second)
     # act
     variable_rate_per_second = reserves_manager.updateState.call(
         dai, {"from": account}
     ) / (10**18)
 
+    print(variable_rate_per_second)
+
     # assert
-    assert variable_rate_per_second == expectet_variable_rate_per_second
+    assert variable_rate_per_second == pytest.approx(expectet_variable_rate_per_second)
 
 
-def test_seconds_per_year(reserves_manager):
+def test_update_variable_borrow_index(
+    reserves_manager, dai, account, pool_configuration, pool
+):
 
-    assert reserves_manager.SECONDS_PER_YEAR() == 31536000
+    # arrange
+    expected_variable_borrow_index = (3 / 31536000) * 15
+    print(expected_variable_borrow_index)
+
+    # act
+
+    variable_borrow_index = reserves_manager.updateVariableBorrowIndex.call(
+        Web3.toWei(round(3 / 31536000, 18), "ether"), 15  # Web3.toWei(15, "ether")
+    ) / (10**18)
+
+    print(variable_borrow_index)
+
+    # assert
+
+    assert variable_borrow_index == pytest.approx(expected_variable_borrow_index)
