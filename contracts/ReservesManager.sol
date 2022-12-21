@@ -62,7 +62,7 @@ contract ReservesManager is DSMath {
         if (totalDeposited == 0) {
             utilizationRate = 0;
         } else {
-            utilizationRate = wdiv(totalBorrowed, totalDeposited) * 100;
+            utilizationRate = wdiv(totalBorrowed, totalDeposited);
         }
 
         return utilizationRate;
@@ -77,7 +77,7 @@ contract ReservesManager is DSMath {
 
         uint256 variableBorrowRate = add(
             baseVariableBorrowRate,
-            (wmul(wdiv(utilizationRate, 100 * 10**18), interestRateSlope))
+            (wmul(utilizationRate, interestRateSlope))
         );
 
         return variableBorrowRate;
