@@ -42,12 +42,13 @@ def test_update_utilization_rate(
 ):
 
     # arrange
-    expexted_utilization_rate = (BORROW_AMOUNT / SUPPLY_AMOUNT) * 100  # basis points
+    expexted_utilization_rate = BORROW_AMOUNT / SUPPLY_AMOUNT  # basis points
 
     # act
     utilization_rate = reserves_manager.updateUtilizationRate.call(
         dai, {"from": account}
     )
+    print(utilization_rate)
 
     # assert
     assert utilization_rate / 10**18 == expexted_utilization_rate
@@ -83,39 +84,42 @@ def test_update_variable_borrow_rate(
     assert variable_borrow_rate / 10**18 == expected_variable_borrow_rate
 
 
-def test_update_state(borrow, reserves_manager, dai, account, pool_configuration, pool):
-
-    # arrange
-    expectet_variable_rate_per_second = 3.75 / 31536000
-
-    print(expectet_variable_rate_per_second)
-    # act
-    variable_rate_per_second = reserves_manager.updateState.call(
-        dai, {"from": account}
-    ) / (10**18)
-
-    print(variable_rate_per_second)
-
-    # assert
-    assert variable_rate_per_second == pytest.approx(expectet_variable_rate_per_second)
-
-
 def test_update_variable_borrow_index(
     reserves_manager, dai, account, pool_configuration, pool
 ):
 
     # arrange
-    expected_variable_borrow_index = (3 / 31536000) * 15
-    print(expected_variable_borrow_index)
+    seconds_since_latest_update = 10
+    variable_rate_per_second = 3.75 / 31536000
+
+    expected_variable_borrow_index = 1 * (
+        1 + variable_rate_per_second * seconds_since_latest_update
+    )
 
     # act
+    variable_borrow_index_tx = reserves_manager.updateVariableBorrowIndex(
+        Web3.toWei(variable_rate_per_second, "ether"),
+        seconds_since_latest_update,  # Web3.toWei(15, "ether")
+    )
 
-    variable_borrow_index = reserves_manager.updateVariableBorrowIndex.call(
-        Web3.toWei(round(3 / 31536000, 18), "ether"), 15  # Web3.toWei(15, "ether")
-    ) / (10**18)
-
-    print(variable_borrow_index)
+    variable_borrow_index_tx.wait(1)
+    variable_borrow_index = variable_borrow_index_tx.return_value
 
     # assert
+    assert (
+        variable_borrow_index / (10**18)
+        == reserves_manager.variableBorrowIndex() / (10**18)
+        == expected_variable_borrow_index
+    )
 
-    assert variable_borrow_index == pytest.approx(expected_variable_borrow_index)
+
+def test_update_state(borrow, reserves_manager, dai, account, pool_configuration, pool):
+
+    # act
+    chain.sleep(10)
+    chain.mine(1)
+    update_state_tx = reserves_manager.updateState(dai)
+    variable_borrow_index = update_state_tx.return_value
+
+    # assert
+    assert variable_borrow_index == reserves_manager.variableBorrowIndex()

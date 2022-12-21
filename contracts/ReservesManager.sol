@@ -13,9 +13,9 @@ contract ReservesManager is DSMath {
     uint256 public immutable interestRateSlope;
     uint256 public immutable baseVariableBorrowRate;
 
-    uint256 lastUpdateTime;
+    uint256 lastUpdateTime = block.timestamp;
     uint256 public constant SECONDS_PER_YEAR = 365 days;
-    uint256 internal variableBorrowIndex = 1;
+    uint256 public variableBorrowIndex = 1000000000000000000;
 
     constructor(
         address _poolConfigurationAddress,
@@ -83,29 +83,33 @@ contract ReservesManager is DSMath {
         return variableBorrowRate;
     }
 
+    function updateVariableBorrowIndex(
+        uint256 _variableBorrowRatePerSecond,
+        uint256 _secondsSinceLastupdate
+    ) public returns (uint256) {
+        variableBorrowIndex = wmul(
+            variableBorrowIndex,
+            add(
+                1000000000000000000,
+                _variableBorrowRatePerSecond * _secondsSinceLastupdate
+            )
+        );
+
+        return variableBorrowIndex;
+    }
+
     function updateState(address _underlyingAsset) public returns (uint256) {
         uint256 secondsSinceLastupdate = block.timestamp - lastUpdateTime;
         uint256 variableBorrowRate = updateVariableBorrowRate(_underlyingAsset);
         uint256 variableBorrowRatePerSecond = variableBorrowRate /
             SECONDS_PER_YEAR;
 
+        variableBorrowIndex = updateVariableBorrowIndex(
+            variableBorrowRatePerSecond,
+            secondsSinceLastupdate
+        );
+
         lastUpdateTime = block.timestamp;
-        return variableBorrowRatePerSecond;
-    }
-
-    function updateVariableBorrowIndex(
-        uint256 _variableBorrowRatePerSecond,
-        uint256 _secondsSinceLastupdate
-    ) public returns (uint256) {
-        // variableBorrowIndex = wmul(
-        //     variableBorrowIndex,
-        //     add(1, wmul(_variableBorrowRatePerSecond, _secondsSinceLastupdate))
-        // );
-
-        variableBorrowIndex =
-            variableBorrowIndex *
-            (1 + _variableBorrowRatePerSecond * _secondsSinceLastupdate);
-
         return variableBorrowIndex;
     }
 }
