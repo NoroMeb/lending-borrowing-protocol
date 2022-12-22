@@ -38,6 +38,24 @@ def test_only_owner_can_set_pool_logic_address(pool, pool_logic):
         pool.setPoolConfigurationAddress(pool_logic, {"from": non_owner})
 
 
+def test_set_reserves_manager_address(
+    set_reserves_manager_address, pool, reserves_manager
+):
+
+    # assert
+    assert pool.reservesManager() == reserves_manager
+
+
+def test_only_owner_can_set_reserves_manager_address(pool, reserves_manager):
+
+    # arrange
+    non_owner = get_account(index=2)
+
+    # act / assert
+    with reverts():
+        pool.setReservesManagerAddress(reserves_manager, {"from": non_owner})
+
+
 def test_supply_null_amount(
     set_pool_configuration_address, add_token, account, pool, dai
 ):

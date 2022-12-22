@@ -57,6 +57,18 @@ def pool_logic(account, pool_configuration):
 
 
 @pytest.fixture()
+def reserves_manager(account, pool_configuration):
+    reserves_manager = ReservesManager.deploy(
+        pool_configuration,
+        INTEREST_RATE_SLOPE,
+        BASE_VARIABLE_BORROW_RATE,
+        {"from": account},
+    )
+
+    return reserves_manager
+
+
+@pytest.fixture()
 def dai(account):
     dai = MockDai.deploy({"from": account})
 
@@ -115,6 +127,11 @@ def set_pool_logic_address(account, pool, pool_logic):
 
 
 @pytest.fixture()
+def set_reserves_manager_address(account, pool, reserves_manager):
+    pool.setReservesManagerAddress(reserves_manager, {"from": account})
+
+
+@pytest.fixture()
 def supply(add_token, set_pool_configuration_address, pool, account, dai):
     dai.approve(pool, SUPPLY_AMOUNT, {"from": account})
     pool.supply(dai, SUPPLY_AMOUNT, {"from": account})
@@ -126,18 +143,6 @@ def price_oracle(account, mock_v3_aggregator):
     price_oracle = PriceOracle.deploy(mock_v3_aggregator, decimals, {"from": account})
 
     return price_oracle
-
-
-@pytest.fixture()
-def reserves_manager(account, pool_configuration):
-    reserves_manager = ReservesManager.deploy(
-        pool_configuration,
-        INTEREST_RATE_SLOPE,
-        BASE_VARIABLE_BORROW_RATE,
-        {"from": account},
-    )
-
-    return reserves_manager
 
 
 @pytest.fixture()

@@ -3,6 +3,7 @@ pragma solidity ^0.8.12;
 
 import "./PoolLogic.sol";
 import "./PoolConfiguration.sol";
+import "./ReservesManager.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/IXToken.sol";
 import "../interfaces/IDebtToken.sol";
@@ -11,6 +12,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract Pool is Ownable {
     PoolConfiguration public poolConfiguration;
     PoolLogic public poolLogic;
+    ReservesManager public reservesManager;
 
     function setPoolConfigurationAddress(address _poolConfigurationAddress)
         external
@@ -21,6 +23,13 @@ contract Pool is Ownable {
 
     function setPoolLogicAddress(address _poolLogicAddress) external onlyOwner {
         poolLogic = PoolLogic(_poolLogicAddress);
+    }
+
+    function setReservesManagerAddress(address _reservesManagerAddress)
+        external
+        onlyOwner
+    {
+        reservesManager = ReservesManager(_reservesManagerAddress);
     }
 
     function supply(address _asset, uint256 _amount) public {
