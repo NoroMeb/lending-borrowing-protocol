@@ -15,8 +15,6 @@ def test_reserves_manager_constructor(account, supply, pool_configuration):
     # act
     reserves_manager = ReservesManager.deploy(
         pool_configuration,
-        INTEREST_RATE_SLOPE,
-        BASE_VARIABLE_BORROW_RATE,
         {"from": account},
     )
 

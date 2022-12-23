@@ -1,5 +1,7 @@
-from brownie import Contract, XToken, PriceOracle, reverts, DebtToken
+from brownie import Contract, XToken, PriceOracle, reverts, DebtToken, chain
 from scripts.utils import get_account
+from conftest import BASE_VARIABLE_BORROW_RATE, INTEREST_RATE_SLOPE
+from web3 import Web3
 
 
 def test_pool_configuration_constructor(pool_configuration, pool):
@@ -17,6 +19,8 @@ def test_only_owner_can_add_token(dai, mock_v3_aggregator, pool_configuration):
     underlying_asset = dai
     price_feed_address = mock_v3_aggregator
     decimals = 18
+    base_variable_borrow_rate = BASE_VARIABLE_BORROW_RATE
+    interest_rate_slope = INTEREST_RATE_SLOPE
 
     # act / assert
     with reverts():
@@ -26,6 +30,8 @@ def test_only_owner_can_add_token(dai, mock_v3_aggregator, pool_configuration):
             underlying_asset,
             price_feed_address,
             decimals,
+            base_variable_borrow_rate,
+            interest_rate_slope,
             {"from": non_owner},
         )
 
@@ -98,3 +104,33 @@ def test_add_token_map_underlying_asset_price_oracle(
 
     # assert
     assert pool_configuration.underlyingAssetToPriceOracle(dai) == add_token[2]
+
+
+def test_init_reserve(pool_configuration, dai, account):
+
+    # arrange
+    total_deposited = 0
+    total_borrowed = 0
+    initial_utilization_rate = 0
+    initial_variable_borrow_rate = 0
+    base_variable_borrow_rate = BASE_VARIABLE_BORROW_RATE
+    interest_rate_slope = INTEREST_RATE_SLOPE
+    initial_variable_borrow_index = Web3.toWei(1, "ether")
+    last_update_time = chain[-1].timestamp + 1
+
+    # act
+    pool_configuration._initReserve(
+        dai, base_variable_borrow_rate, interest_rate_slope, {"from": account}
+    )
+
+    # assert
+    assert pool_configuration.getUnderlyingAssetToReserve(dai) == (
+        total_deposited,
+        total_borrowed,
+        initial_utilization_rate,
+        initial_variable_borrow_rate,
+        base_variable_borrow_rate,
+        interest_rate_slope,
+        initial_variable_borrow_index,
+        last_update_time,
+    )

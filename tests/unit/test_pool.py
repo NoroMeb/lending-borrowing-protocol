@@ -100,14 +100,14 @@ def test_supply_mint_xtoken_to_supplier(supply, account, dai, pool_configuration
     assert x_token_contract.balanceOf(account) == SUPPLY_AMOUNT
 
 
-def test_supply_increase_total_deposited(supply, pool_configuration, dai, account):
+def test_supply_increase_total_deposited(
+    supply, pool_configuration, reserves_manager, dai, account
+):
 
     # arrange
-    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
-    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
 
     # assert
-    assert x_token_contract.getTotalDeposited() == SUPPLY_AMOUNT
+    assert reserves_manager.getReserveTotalDeposited(dai) == SUPPLY_AMOUNT
 
 
 def test_borrow_invalid_amount(supply, dai, pool, set_pool_logic_address, account):
