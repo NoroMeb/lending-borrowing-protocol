@@ -10,72 +10,51 @@ import time
 import pytest
 
 
-def test_reserves_manager_constructor(account, supply, pool_configuration):
+def test_reserves_manager_constructor(account, supply, pool, pool_configuration):
 
     # act
     reserves_manager = ReservesManager.deploy(
         pool_configuration,
+        pool,
         {"from": account},
     )
 
     # assert
-    assert reserves_manager.poolConfiguration() == pool_configuration
+    assert reserves_manager.poolConfigurationAddress() == pool_configuration
+    assert reserves_manager.poolAddress() == pool
 
 
-def test_get_reserve_balance(reserves_manager, supply, dai):
-
-    # act / assert
-    assert reserves_manager.getReserveBalance(dai) == SUPPLY_AMOUNT
-
-
-def test_get_reserve_balance_of_non_available_token(reserves_manager, supply, link):
-
-    # act / assert
-    with reverts("token not available"):
-        reserves_manager.getReserveBalance(link)
-
-
-def test_update_utilization_rate(
-    borrow, reserves_manager, dai, account, pool_configuration
-):
+def test_update_utilization_rate(reserves_manager):
 
     # arrange
-    expexted_utilization_rate = BORROW_AMOUNT / SUPPLY_AMOUNT  # basis points
+    total_deposited = SUPPLY_AMOUNT
+    total_borrowed = BORROW_AMOUNT
+
+    expexted_utilization_rate = total_borrowed / total_deposited  # basis points
 
     # act
     utilization_rate = reserves_manager.updateUtilizationRate.call(
-        dai, {"from": account}
+        total_deposited, total_borrowed
     )
-    print(utilization_rate)
 
     # assert
     assert utilization_rate / 10**18 == expexted_utilization_rate
 
 
-def test_update_variable_borrow_rate(
-    add_token, reserves_manager, dai, account, pool_configuration, pool
-):
+def test_update_variable_borrow_rate(reserves_manager):
 
     # arrange
-    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
-    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
+    utilization_rate = Web3.toWei(0.75, "ether")
+    base_variable_borrow_rate = BASE_VARIABLE_BORROW_RATE
+    interest_rate_slope = INTEREST_RATE_SLOPE
 
-    debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
-    debt_token_contract = Contract.from_abi(
-        "DebtToken", debt_token_address, DebtToken.abi
-    )
-
-    total_deposited = Web3.toWei(100, "ether")
-    total_borrowed = Web3.toWei(0.1, "ether")
-
-    x_token_contract.setTotalDeposited(total_deposited, {"from": pool})
-    debt_token_contract.setTotalBorrowed(total_borrowed, {"from": pool})
-
-    expected_variable_borrow_rate = 0.005
+    expected_variable_borrow_rate = 3.75
 
     # act
     variable_borrow_rate = reserves_manager.updateVariableBorrowRate(
-        dai, {"from": account}
+        utilization_rate,
+        base_variable_borrow_rate,
+        interest_rate_slope,
     )
 
     # assert
@@ -83,41 +62,97 @@ def test_update_variable_borrow_rate(
 
 
 def test_update_variable_borrow_index(
-    reserves_manager, dai, account, pool_configuration, pool
+    reserves_manager, dai, account, pool_configuration, pool, add_token
 ):
 
     # arrange
+
     seconds_since_latest_update = 10
-    variable_rate_per_second = 3.75 / 31536000
+    variable_borrow_rate = 3.75
+    seconds_per_year = 31536000
+    latest_variable_borrow_index = 1
 
-    expected_variable_borrow_index = 1 * (
-        1 + variable_rate_per_second * seconds_since_latest_update
+    expected_variable_borrow_index = latest_variable_borrow_index * (
+        1 + (variable_borrow_rate / seconds_per_year) * seconds_since_latest_update
     )
-
     # act
-    variable_borrow_index_tx = reserves_manager.updateVariableBorrowIndex(
-        Web3.toWei(variable_rate_per_second, "ether"),
+    variable_borrow_index = reserves_manager.updateVariableBorrowIndex(
+        Web3.toWei(latest_variable_borrow_index, "ether"),
+        Web3.toWei(variable_borrow_rate, "ether"),
         seconds_since_latest_update,  # Web3.toWei(15, "ether")
     )
 
-    variable_borrow_index_tx.wait(1)
-    variable_borrow_index = variable_borrow_index_tx.return_value
+    # assert
+    assert variable_borrow_index / (10**18) == expected_variable_borrow_index
+
+
+def test_init_reserve(add_token, init_reserve, reserves_manager, dai, account):
+
+    # arrange
+    total_deposited = 0
+    total_borrowed = 0
+    initial_utilization_rate = 0
+    initial_variable_borrow_rate = 0
+    base_variable_borrow_rate = BASE_VARIABLE_BORROW_RATE
+    interest_rate_slope = INTEREST_RATE_SLOPE
+    initial_variable_borrow_index = Web3.toWei(1, "ether")
+    last_update_time = chain[-1].timestamp
+    x_token = add_token[0]
+    debt_token = add_token[1]
 
     # assert
-    assert (
-        variable_borrow_index / (10**18)
-        == reserves_manager.variableBorrowIndex() / (10**18)
-        == expected_variable_borrow_index
+    assert reserves_manager.underlyingAssetToReserve(dai) == (
+        total_deposited,
+        total_borrowed,
+        initial_utilization_rate,
+        initial_variable_borrow_rate,
+        base_variable_borrow_rate,
+        interest_rate_slope,
+        initial_variable_borrow_index,
+        last_update_time,
+        x_token,
+        debt_token,
     )
 
 
-def test_update_state(borrow, reserves_manager, dai, account, pool_configuration, pool):
+def test_get_reserve(reserves_manager, init_reserve, add_token, dai):
+
+    # arrange
+    total_deposited = 0
+    total_borrowed = 0
+    initial_utilization_rate = 0
+    initial_variable_borrow_rate = 0
+    base_variable_borrow_rate = BASE_VARIABLE_BORROW_RATE
+    interest_rate_slope = INTEREST_RATE_SLOPE
+    initial_variable_borrow_index = Web3.toWei(1, "ether")
+    last_update_time = chain[-1].timestamp
+    x_token = add_token[0]
+    debt_token = add_token[1]
+    expected_reserve = (
+        total_deposited,
+        total_borrowed,
+        initial_utilization_rate,
+        initial_variable_borrow_rate,
+        base_variable_borrow_rate,
+        interest_rate_slope,
+        initial_variable_borrow_index,
+        last_update_time,
+        x_token,
+        debt_token,
+    )
+
+    # act / assert
+    assert reserves_manager.getReserve(dai) == expected_reserve
+
+
+def test_update_state(reserves_manager, pool, dai):
+
+    # arrange
+    amount = SUPPLY_AMOUNT
+    operation = 0  # supply
 
     # act
-    chain.sleep(10)
-    chain.mine(1)
-    update_state_tx = reserves_manager.updateState(dai)
-    variable_borrow_index = update_state_tx.return_value
+    reserves_manager.updateState(dai, amount, operation, {"from": pool})
 
     # assert
-    assert variable_borrow_index == reserves_manager.variableBorrowIndex()
+    assert reserves_manager.getReserve(dai)[0] == amount

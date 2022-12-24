@@ -7,8 +7,6 @@ contract XToken is ERC20 {
     address public poolAddress;
     address public underlyingAsset;
 
-    uint256 public totalDeposited;
-
     modifier onlyPool() {
         require(_msgSender() == poolAddress, "caller must be pool");
         _;
@@ -37,13 +35,5 @@ contract XToken is ERC20 {
         onlyPool
     {
         IERC20(underlyingAsset).transfer(_account, _amount);
-    }
-
-    function getTotalDeposited() external view returns (uint256) {
-        return totalDeposited;
-    }
-
-    function setTotalDeposited(uint256 _totalDeposited) external onlyPool {
-        totalDeposited = _totalDeposited;
     }
 }

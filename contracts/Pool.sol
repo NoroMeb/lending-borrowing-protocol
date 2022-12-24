@@ -38,10 +38,6 @@ contract Pool is Ownable {
         address xtoken = poolConfiguration.underlyingAssetToXtoken(_asset);
         IERC20(_asset).transferFrom(msg.sender, xtoken, _amount);
         IXToken(xtoken).mint(msg.sender, _amount);
-
-        uint256 totalDeposited = IXToken(xtoken).getTotalDeposited();
-        totalDeposited = totalDeposited + _amount;
-        IXToken(xtoken).setTotalDeposited(totalDeposited);
     }
 
     function borrow(address _asset, uint256 _amount) public returns (uint256) {
@@ -59,10 +55,6 @@ contract Pool is Ownable {
             IXToken(xtoken).burn(msg.sender, _amount);
 
             IDebtToken(debtToken).mint(msg.sender, _amount);
-
-            uint256 totalBorrowed = IDebtToken(debtToken).getTotalBorrowed();
-            totalBorrowed = totalBorrowed + _amount;
-            IDebtToken(debtToken).setTotalBorrowed(totalBorrowed);
             return _amount;
         }
     }
@@ -80,9 +72,6 @@ contract Pool is Ownable {
         } else {
             IXToken(xtoken).transferUnderlyingAssetTo(msg.sender, _amount);
             IXToken(xtoken).burn(msg.sender, _amount);
-            uint256 totalDeposited = IXToken(xtoken).getTotalDeposited();
-            totalDeposited = totalDeposited - _amount;
-            IXToken(xtoken).setTotalDeposited(totalDeposited);
 
             return _amount;
         }

@@ -6,10 +6,13 @@ import "./tokenization/DebtToken.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./PriceOracle.sol";
 
+import "./ReservesManager.sol";
+
 import {DataTypes} from "./libraries/DataTypes.sol";
 
 contract PoolConfiguration is Ownable {
     address public poolAddress;
+    ReservesManager public reservesManager;
     XToken internal xtoken;
     DebtToken internal debtToken;
     PriceOracle internal priceOracle;
@@ -22,6 +25,13 @@ contract PoolConfiguration is Ownable {
 
     constructor(address _poolAddress) {
         poolAddress = _poolAddress;
+    }
+
+    function setReserveManagerContract(address _reserveManagerAddress)
+        external
+        onlyOwner
+    {
+        reservesManager = ReservesManager(_reserveManagerAddress);
     }
 
     function addToken(
@@ -51,14 +61,15 @@ contract PoolConfiguration is Ownable {
         debtToken = new DebtToken(
             string.concat("debt", _name),
             string.concat("debt", _symbol),
-            _underlyingAsset,
             poolAddress
         );
 
-        initReserve(
+        reservesManager.initReserve(
             _underlyingAsset,
             _interestRateSlope,
-            _baseVariableBorrowRate
+            _baseVariableBorrowRate,
+            address(xtoken),
+            address(debtToken)
         );
 
         underlyingAssetToXtoken[_underlyingAsset] = address(xtoken);
@@ -70,47 +81,5 @@ contract PoolConfiguration is Ownable {
         underlyingAssetToPriceOracle[_underlyingAsset] = address(priceOracle);
 
         return (address(xtoken), address(debtToken), address(priceOracle));
-    }
-
-    function initReserve(
-        address _underlyingAsset,
-        uint256 _baseVariableBorrowRate,
-        uint256 _interestRateSlope
-    ) internal {
-        uint256 totalDeposited = 0;
-        uint256 totalBorrowed = 0;
-        uint256 initialUitilizationRate = 0;
-        uint256 initialVariableBorrowIndex = 1000000000000000000;
-        uint256 lastUpdateTime = block.timestamp;
-        uint256 initialVariableBorrowRate = 0;
-
-        // DataTypes.Reserve storage reserve;
-
-        DataTypes.Reserve memory reserve = DataTypes.Reserve(
-            totalDeposited,
-            totalBorrowed,
-            initialUitilizationRate,
-            initialVariableBorrowRate,
-            _baseVariableBorrowRate,
-            _interestRateSlope,
-            initialVariableBorrowIndex,
-            lastUpdateTime
-        );
-        underlyingAssetToReserve[_underlyingAsset] = reserve;
-    }
-
-    function getUnderlyingAssetToReserve(address _underlyingAsset)
-        public
-        view
-        returns (DataTypes.Reserve memory)
-    {
-        return underlyingAssetToReserve[_underlyingAsset];
-    }
-
-    function setUnderlyingAssetToReserve(
-        address _underlyingAsset,
-        DataTypes.Reserve memory reserve
-    ) public {
-        underlyingAssetToReserve[_underlyingAsset] = reserve;
     }
 }

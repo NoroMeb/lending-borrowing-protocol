@@ -5,9 +5,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract DebtToken is ERC20 {
     address public poolAddress;
-    address public underlyingAsset;
-
-    uint256 public totalBorrowed;
 
     modifier onlyPool() {
         require(_msgSender() == poolAddress, "caller must be pool");
@@ -17,11 +14,9 @@ contract DebtToken is ERC20 {
     constructor(
         string memory _name,
         string memory _symbol,
-        address _underlyingAsset,
         address _poolAddress
     ) ERC20(_name, _symbol) {
         poolAddress = _poolAddress;
-        underlyingAsset = _underlyingAsset;
     }
 
     function mint(address _account, uint256 _amount) external onlyPool {
@@ -97,14 +92,6 @@ contract DebtToken is ERC20 {
         spender;
         subtractedValue;
         revert("ALLOWANCE_NOT_SUPPORTED");
-    }
-
-    function getTotalBorrowed() external view returns (uint256) {
-        return totalBorrowed;
-    }
-
-    function setTotalBorrowed(uint256 _totalBorrowed) external onlyPool {
-        totalBorrowed = _totalBorrowed;
     }
 
     function balanceOf(address user)

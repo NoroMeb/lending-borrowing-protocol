@@ -10,107 +10,166 @@ import "@ds-math/src/math.sol";
 import {DataTypes} from "./libraries/DataTypes.sol";
 
 contract ReservesManager is DSMath {
-    PoolConfiguration public poolConfiguration;
+    address public poolConfigurationAddress;
     address public poolAddress;
 
     uint256 public constant SECONDS_PER_YEAR = 365 days;
+
+    mapping(address => DataTypes.Reserve) public underlyingAssetToReserve;
 
     modifier onlyPool() {
         require(msg.sender == poolAddress, "caller must be pool");
         _;
     }
 
+    modifier onlyPoolConfiguration() {
+        require(
+            msg.sender == poolConfigurationAddress,
+            "caller must be pool configuration"
+        );
+        _;
+    }
+
     constructor(address _poolConfigurationAddress, address _poolAddress) {
-        poolConfiguration = PoolConfiguration(_poolConfigurationAddress);
+        poolConfigurationAddress = _poolConfigurationAddress;
         poolAddress = _poolAddress;
     }
 
-    function getReserveBalance(address _underlyingAsset)
+    function getReserve(address _underlyingAsset)
         public
         view
-        returns (uint256)
+        returns (DataTypes.Reserve memory)
     {
-        require(
-            poolConfiguration.isAvailable(_underlyingAsset),
-            "token not available"
-        );
-        address reserve = poolConfiguration.underlyingAssetToXtoken(
-            _underlyingAsset
-        );
-        uint256 reserveBalance = IERC20(_underlyingAsset).balanceOf(reserve);
-
-        return reserveBalance;
+        return underlyingAssetToReserve[_underlyingAsset];
     }
 
-    function updateUtilizationRate(DataTypes.Reserve memory _reserve)
-        public
-        view
-        returns (uint256)
-    {
-        uint256 totalDeposited = _reserve.totalDeposited;
-        uint256 totalBorrowed = _reserve.totalBorrowed;
+    function updateUtilizationRate(
+        uint256 _totalDeposited,
+        uint256 _totalBorrowed
+    ) public pure returns (uint256) {
+        uint256 utilizationRate;
 
-        if (totalDeposited == 0) {
-            _reserve.utilizationRate = 0;
+        if (_totalDeposited == 0) {
+            utilizationRate = 0;
         } else {
-            _reserve.utilizationRate = wdiv(totalBorrowed, totalDeposited);
+            utilizationRate = wdiv(_totalBorrowed, _totalDeposited);
         }
 
-        return _reserve.utilizationRate;
+        return utilizationRate;
     }
 
-    function updateVariableBorrowRate(DataTypes.Reserve memory _reserve)
-        public
-        view
-        returns (uint256)
-    {
-        _reserve.utilizationRate = updateUtilizationRate(_reserve);
-
-        _reserve.variableBorrowRate = add(
-            _reserve.baseVariableBorrowRate,
-            (wmul(_reserve.utilizationRate, _reserve.interestRateSlope))
+    function updateVariableBorrowRate(
+        uint256 _utilizationRate,
+        uint256 _baseVariableBorrowRate,
+        uint256 _interestRateSlope
+    ) public pure returns (uint256) {
+        uint256 variableBorrowRate = add(
+            _baseVariableBorrowRate,
+            (wmul(_utilizationRate, _interestRateSlope))
         );
 
-        return _reserve.variableBorrowRate;
+        return variableBorrowRate;
     }
 
     function updateVariableBorrowIndex(
-        DataTypes.Reserve memory _reserve,
-        uint256 _variableBorrowRatePerSecond,
+        uint256 _latestVariableBorrowIndex,
+        uint256 _variableBorrowRate,
         uint256 _secondsSinceLastupdate
     ) public pure returns (uint256) {
-        _reserve.variableBorrowIndex = wmul(
-            _reserve.variableBorrowIndex,
+        uint256 variableBorrowRatePerSecond = _variableBorrowRate /
+            SECONDS_PER_YEAR;
+
+        uint256 variableBorrowIndex = wmul(
+            _latestVariableBorrowIndex,
             add(
                 1000000000000000000,
-                _variableBorrowRatePerSecond * _secondsSinceLastupdate
+                variableBorrowRatePerSecond * _secondsSinceLastupdate
             )
         );
 
-        return _reserve.variableBorrowIndex;
+        return variableBorrowIndex;
     }
 
-    function updateState(address _underlyingAsset)
-        public
-        view
-        returns (uint256)
-    {
-        DataTypes.Reserve memory reserve = poolConfiguration
-            .getUnderlyingAssetToReserve(_underlyingAsset);
+    // operation : value
+    // supply : 0
+    // borrow : 1
+    // withdraw : 2
+    // repay : 3
+
+    function updateState(
+        address _underlyingAsset,
+        uint256 _amount,
+        uint256 _operation
+    ) public onlyPool {
+        DataTypes.Reserve memory reserve;
+        reserve = underlyingAssetToReserve[_underlyingAsset];
+        uint256 totalDeposited;
+        uint256 totalBorrowed;
 
         uint256 secondsSinceLastupdate = block.timestamp -
             reserve.lastUpdateTime;
-        uint256 variableBorrowRate = updateVariableBorrowRate(reserve);
-        uint256 variableBorrowRatePerSecond = variableBorrowRate /
-            SECONDS_PER_YEAR;
 
-        reserve.variableBorrowIndex = updateVariableBorrowIndex(
-            reserve,
-            variableBorrowRatePerSecond,
+        if (_operation == 0) {
+            totalDeposited = reserve.totalDeposited + _amount;
+        }
+        if (_operation == 1) {
+            totalBorrowed = reserve.totalBorrowed + _amount;
+        }
+        if (_operation == 2) {
+            totalBorrowed = reserve.totalBorrowed - _amount;
+        }
+        if (_operation == 3) {
+            totalBorrowed = reserve.totalBorrowed - _amount;
+        }
+
+        uint256 utilizationRate = updateUtilizationRate(
+            totalDeposited,
+            totalBorrowed
+        );
+        uint256 variableBorrowRate = updateVariableBorrowRate(
+            utilizationRate,
+            reserve.baseVariableBorrowRate,
+            reserve.interestRateSlope
+        );
+        uint256 variableBorrowIndex = updateVariableBorrowIndex(
+            reserve.variableBorrowIndex,
+            variableBorrowRate,
             secondsSinceLastupdate
         );
 
         reserve.lastUpdateTime = block.timestamp;
-        return reserve.variableBorrowIndex;
+
+        underlyingAssetToReserve[_underlyingAsset] = reserve;
+    }
+
+    function initReserve(
+        address _underlyingAsset,
+        uint256 _baseVariableBorrowRate,
+        uint256 _interestRateSlope,
+        address _xToken,
+        address _debtToken
+    ) public onlyPoolConfiguration {
+        uint256 totalDeposited = 0;
+        uint256 totalBorrowed = 0;
+        uint256 initialUitilizationRate = 0;
+        uint256 initialVariableBorrowIndex = 1000000000000000000;
+        uint256 lastUpdateTime = block.timestamp;
+        uint256 initialVariableBorrowRate = 0;
+
+        DataTypes.Reserve memory reserve;
+
+        reserve = DataTypes.Reserve(
+            totalDeposited,
+            totalBorrowed,
+            initialUitilizationRate,
+            initialVariableBorrowRate,
+            _baseVariableBorrowRate,
+            _interestRateSlope,
+            initialVariableBorrowIndex,
+            lastUpdateTime,
+            _xToken,
+            _debtToken
+        );
+        underlyingAssetToReserve[_underlyingAsset] = reserve;
     }
 }

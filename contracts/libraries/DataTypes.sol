@@ -11,5 +11,7 @@ library DataTypes {
         uint256 interestRateSlope;
         uint256 variableBorrowIndex;
         uint256 lastUpdateTime;
+        address xToken;
+        address debtToken;
     }
 }

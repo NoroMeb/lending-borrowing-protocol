@@ -17,16 +17,4 @@ contract PoolConfigurationMock is PoolConfiguration {
     function getPriceOracle() public view returns (PriceOracle) {
         return priceOracle;
     }
-
-    function _initReserve(
-        address _underlyingAsset,
-        uint256 _baseVariableBorrowRate,
-        uint256 _interestRateSlope
-    ) public {
-        super.initReserve(
-            _underlyingAsset,
-            _baseVariableBorrowRate,
-            _interestRateSlope
-        );
-    }
 }

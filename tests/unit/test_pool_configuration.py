@@ -104,33 +104,3 @@ def test_add_token_map_underlying_asset_price_oracle(
 
     # assert
     assert pool_configuration.underlyingAssetToPriceOracle(dai) == add_token[2]
-
-
-def test_init_reserve(pool_configuration, dai, account):
-
-    # arrange
-    total_deposited = 0
-    total_borrowed = 0
-    initial_utilization_rate = 0
-    initial_variable_borrow_rate = 0
-    base_variable_borrow_rate = BASE_VARIABLE_BORROW_RATE
-    interest_rate_slope = INTEREST_RATE_SLOPE
-    initial_variable_borrow_index = Web3.toWei(1, "ether")
-    last_update_time = chain[-1].timestamp + 1
-
-    # act
-    pool_configuration._initReserve(
-        dai, base_variable_borrow_rate, interest_rate_slope, {"from": account}
-    )
-
-    # assert
-    assert pool_configuration.getUnderlyingAssetToReserve(dai) == (
-        total_deposited,
-        total_borrowed,
-        initial_utilization_rate,
-        initial_variable_borrow_rate,
-        base_variable_borrow_rate,
-        interest_rate_slope,
-        initial_variable_borrow_index,
-        last_update_time,
-    )
