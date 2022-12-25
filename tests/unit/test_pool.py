@@ -1,7 +1,13 @@
 from scripts.utils import get_account
-from brownie import reverts, Contract, XToken, DebtToken
+from brownie import reverts, Contract, XToken, DebtToken, chain
 from web3 import Web3
-from conftest import SUPPLY_AMOUNT, WITHDRAW_AMOUNT, BORROW_AMOUNT
+from conftest import (
+    SUPPLY_AMOUNT,
+    WITHDRAW_AMOUNT,
+    BORROW_AMOUNT,
+    BASE_VARIABLE_BORROW_RATE,
+    INTEREST_RATE_SLOPE,
+)
 
 
 def test_set_pool_configuration_address(
@@ -107,31 +113,7 @@ def test_supply_increase_total_deposited(
     # arrange
 
     # assert
-    assert reserves_manager.getReserveTotalDeposited(dai) == SUPPLY_AMOUNT
-
-
-def test_borrow_invalid_amount(supply, dai, pool, set_pool_logic_address, account):
-
-    # arrange
-    amount = Web3.toWei(76, "ether")
-
-    # act
-    return_value = pool.borrow.call(dai, amount, {"from": account})
-
-    # assert
-    assert return_value == 0
-
-
-def test_borrow_valid_amount(supply, dai, pool, set_pool_logic_address, account):
-
-    # arrange
-    amount = Web3.toWei(75, "ether")
-
-    # act
-    return_value = pool.borrow.call(dai, amount, {"from": account})
-
-    # assert
-    assert return_value == amount
+    assert reserves_manager.getTotalDeposited(dai) == SUPPLY_AMOUNT
 
 
 def test_borrow_transfer_funds_from_xtoken_to_borrower(borrow, pool_configuration, dai):
@@ -167,52 +149,10 @@ def test_borrow_mint_debt_token(borrow, pool_configuration, dai, account):
     assert debt_token_contract.balanceOf(account) == BORROW_AMOUNT
 
 
-def test_borrow_increase_total_borrowed(borrow, pool_configuration, dai, account):
-
-    # arrange
-    debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
-    debt_token_contract = Contract.from_abi(
-        "DebtToken", debt_token_address, DebtToken.abi
-    )
+def test_borrow_increase_total_borrowed(borrow, reserves_manager, dai, account):
 
     # assert
-    assert debt_token_contract.getTotalBorrowed() == BORROW_AMOUNT
-
-
-def test_withdraw_invalid_amount(
-    supply,
-    dai,
-    pool,
-    set_pool_logic_address,
-    account,
-):
-
-    # arrange
-    amount = Web3.toWei(101, "ether")
-
-    # act
-    return_value = pool.withdraw.call(dai, amount, {"from": account})
-
-    # assert
-    assert return_value == 0
-
-
-def test_withdraw_valid_amount(
-    supply,
-    dai,
-    pool,
-    set_pool_logic_address,
-    account,
-):
-
-    # arrange
-    amount = Web3.toWei(100, "ether")
-
-    # act
-    return_value = pool.withdraw.call(dai, amount, {"from": account})
-
-    # assert
-    assert return_value == amount
+    assert reserves_manager.getTotalBorrowed(dai) == BORROW_AMOUNT
 
 
 def test_withdraw_transfer_funds_from_xtoken_to_withdrawer(
@@ -237,14 +177,10 @@ def test_withdraw_burn_amount_of_xtoken(withdraw, pool_configuration, dai, accou
     assert x_token_contract.balanceOf(account) == 0
 
 
-def test_withdraw_decrease_total_deposited(withdraw, pool_configuration, dai):
-
-    # arrange
-    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
-    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
+def test_withdraw_decrease_total_deposited(withdraw, reserves_manager, dai):
 
     # assert
-    assert x_token_contract.getTotalDeposited() == 0
+    assert reserves_manager.getTotalDeposited(dai) == 0
 
 
 def test_repay_invalid_insufficient_amount(borrow, pool, dai, account):
@@ -313,3 +249,60 @@ def test_repay_burn_debt_token(repay, account, pool_configuration, dai):
 
     # assert
     assert debt_token_contract.balanceOf(account) == 0
+
+
+def test_update_state_on_borrow(borrow, add_token, reserves_manager, dai):
+
+    # arrange
+    total_deposited = SUPPLY_AMOUNT
+    total_borrowed = BORROW_AMOUNT
+    utilization_rate = Web3.toWei(0.75, "ether")
+    variable_borrow_rate = Web3.toWei(3.75, "ether")
+    base_variable_borrow_rate = BASE_VARIABLE_BORROW_RATE
+    interest_rate_slope = INTEREST_RATE_SLOPE
+    variable_borrow_index = Web3.toWei(
+        1 * (1 + (Web3.fromWei(variable_borrow_rate, "ether") / 31536000) * 1),
+        "ether",
+    )
+    variable_borrow_index_2 = Web3.toWei(
+        1 * (1 + (Web3.fromWei(variable_borrow_rate, "ether") / 31536000) * 2),
+        "ether",
+    )
+    last_update_time = chain[-1].timestamp
+    x_token = add_token[0]
+    debt_token = add_token[1]
+
+    expected_updated_reserve = (
+        total_deposited,
+        total_borrowed,
+        utilization_rate,
+        variable_borrow_rate,
+        base_variable_borrow_rate,
+        interest_rate_slope,
+        variable_borrow_index,
+        last_update_time,
+        x_token,
+        debt_token,
+    )
+
+    expected_updated_reserve_2 = (
+        total_deposited,
+        total_borrowed,
+        utilization_rate,
+        variable_borrow_index,
+        base_variable_borrow_rate,
+        interest_rate_slope,
+        variable_borrow_index,
+        last_update_time,
+        x_token,
+        debt_token,
+    )
+    print(expected_updated_reserve)
+    print("=============================================")
+    print(reserves_manager.getReserve(dai))
+
+    # assert
+    assert (
+        reserves_manager.getReserve(dai) == expected_updated_reserve
+        or expected_updated_reserve_2
+    )
