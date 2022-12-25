@@ -66,8 +66,8 @@ contract PoolConfiguration is Ownable {
 
         reservesManager.initReserve(
             _underlyingAsset,
-            _interestRateSlope,
             _baseVariableBorrowRate,
+            _interestRateSlope,
             address(xtoken),
             address(debtToken)
         );
