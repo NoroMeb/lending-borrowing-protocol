@@ -34,6 +34,7 @@ contract PoolLogic {
 
     function getAmountInUSD(uint256 _amount, address _underlyingAsset)
         internal
+        view
         returns (uint256)
     {
         address priceOracleAddress = poolConfiguration
