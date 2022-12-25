@@ -11,6 +11,7 @@ from brownie import (
     PoolLogicMock,
     PriceOracle,
     ReservesManager,
+    chain,
 )
 
 PRICE = 10
@@ -153,7 +154,14 @@ def set_reserves_manager_address(account, pool, reserves_manager):
 
 
 @pytest.fixture()
-def supply(add_token, set_pool_configuration_address, pool, account, dai):
+def supply(
+    add_token,
+    set_pool_configuration_address,
+    set_reserves_manager_address,
+    pool,
+    account,
+    dai,
+):
     dai.approve(pool, SUPPLY_AMOUNT, {"from": account})
     pool.supply(dai, SUPPLY_AMOUNT, {"from": account})
 
@@ -167,17 +175,29 @@ def price_oracle(account, mock_v3_aggregator):
 
 
 @pytest.fixture()
-def borrow(supply, dai, pool, set_pool_logic_address, account):
+def borrow(
+    supply, dai, pool, set_pool_logic_address, set_reserves_manager_address, account
+):
     pool.borrow(dai, BORROW_AMOUNT, {"from": account})
 
 
 @pytest.fixture()
-def withdraw(supply, dai, pool, set_pool_logic_address, account):
+def withdraw(
+    supply, dai, pool, set_pool_logic_address, set_reserves_manager_address, account
+):
     pool.withdraw(dai, WITHDRAW_AMOUNT, {"from": account})
 
 
 @pytest.fixture()
-def repay(supply, borrow, pool, set_pool_logic_address, dai, account):
+def repay(
+    supply,
+    borrow,
+    pool,
+    set_pool_logic_address,
+    set_reserves_manager_address,
+    dai,
+    account,
+):
     dai.approve(pool, BORROW_AMOUNT, {"from": account})
     pool.repay(dai, BORROW_AMOUNT, {"from": account})
 
@@ -195,6 +215,33 @@ def init_reserve(add_token, reserves_manager, dai, pool_configuration):
         x_token,
         debt_token,
         {"from": pool_configuration},
+    )
+
+
+@pytest.fixture()
+def initial_reserve(add_token):
+    total_deposited = 0
+    total_borrowed = 0
+    initial_utilization_rate = 0
+    initial_variable_borrow_rate = 0
+    base_variable_borrow_rate = BASE_VARIABLE_BORROW_RATE
+    interest_rate_slope = INTEREST_RATE_SLOPE
+    initial_variable_borrow_index = Web3.toWei(1, "ether")
+    last_update_time = chain[-1].timestamp
+    x_token = add_token[0]
+    debt_token = add_token[1]
+
+    return (
+        total_deposited,
+        total_borrowed,
+        initial_utilization_rate,
+        initial_variable_borrow_rate,
+        base_variable_borrow_rate,
+        interest_rate_slope,
+        initial_variable_borrow_index,
+        last_update_time,
+        x_token,
+        debt_token,
     )
 
 
