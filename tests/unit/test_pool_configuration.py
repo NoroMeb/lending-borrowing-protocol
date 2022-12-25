@@ -104,3 +104,11 @@ def test_add_token_map_underlying_asset_price_oracle(
 
     # assert
     assert pool_configuration.underlyingAssetToPriceOracle(dai) == add_token[2]
+
+
+def test_add_token_init_new_reserve(
+    add_token, pool_configuration, reserves_manager, dai, initial_reserve
+):
+
+    # assert
+    assert reserves_manager.getReserve(dai) == initial_reserve
