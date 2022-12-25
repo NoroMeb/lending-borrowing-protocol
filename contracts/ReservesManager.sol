@@ -103,28 +103,26 @@ contract ReservesManager is DSMath {
     ) public onlyPool {
         DataTypes.Reserve memory reserve;
         reserve = underlyingAssetToReserve[_underlyingAsset];
-        uint256 totalDeposited;
-        uint256 totalBorrowed;
 
         uint256 secondsSinceLastupdate = block.timestamp -
             reserve.lastUpdateTime;
 
         if (_operation == 0) {
-            totalDeposited = reserve.totalDeposited + _amount;
+            reserve.totalDeposited = reserve.totalDeposited + _amount;
         }
         if (_operation == 1) {
-            totalBorrowed = reserve.totalBorrowed + _amount;
+            reserve.totalBorrowed = reserve.totalBorrowed + _amount;
         }
         if (_operation == 2) {
-            totalBorrowed = reserve.totalBorrowed - _amount;
+            reserve.totalDeposited = reserve.totalDeposited - _amount;
         }
         if (_operation == 3) {
-            totalBorrowed = reserve.totalBorrowed - _amount;
+            reserve.totalBorrowed = reserve.totalBorrowed - _amount;
         }
 
         uint256 utilizationRate = updateUtilizationRate(
-            totalDeposited,
-            totalBorrowed
+            reserve.totalDeposited,
+            reserve.totalBorrowed
         );
         uint256 variableBorrowRate = updateVariableBorrowRate(
             utilizationRate,
@@ -136,6 +134,10 @@ contract ReservesManager is DSMath {
             variableBorrowRate,
             secondsSinceLastupdate
         );
+
+        reserve.utilizationRate = utilizationRate;
+        reserve.variableBorrowRate = variableBorrowRate;
+        reserve.variableBorrowIndex = variableBorrowIndex;
 
         reserve.lastUpdateTime = block.timestamp;
 
@@ -171,5 +173,82 @@ contract ReservesManager is DSMath {
             _debtToken
         );
         underlyingAssetToReserve[_underlyingAsset] = reserve;
+    }
+
+    function getTotalDeposited(address _underlyingAsset)
+        public
+        view
+        returns (uint256)
+    {
+        return underlyingAssetToReserve[_underlyingAsset].totalDeposited;
+    }
+
+    function getTotalBorrowed(address _underlyingAsset)
+        public
+        view
+        returns (uint256)
+    {
+        return underlyingAssetToReserve[_underlyingAsset].totalBorrowed;
+    }
+
+    function getUtilizationRate(address _underlyingAsset)
+        public
+        view
+        returns (uint256)
+    {
+        return underlyingAssetToReserve[_underlyingAsset].utilizationRate;
+    }
+
+    function getVariableBorrowRate(address _underlyingAsset)
+        public
+        view
+        returns (uint256)
+    {
+        return underlyingAssetToReserve[_underlyingAsset].variableBorrowRate;
+    }
+
+    function getBaseVariableBorrowRate(address _underlyingAsset)
+        public
+        view
+        returns (uint256)
+    {
+        return
+            underlyingAssetToReserve[_underlyingAsset].baseVariableBorrowRate;
+    }
+
+    function getInterestRateSlope(address _underlyingAsset)
+        public
+        view
+        returns (uint256)
+    {
+        return underlyingAssetToReserve[_underlyingAsset].interestRateSlope;
+    }
+
+    function getVariableBorrowIndex(address _underlyingAsset)
+        public
+        view
+        returns (uint256)
+    {
+        return underlyingAssetToReserve[_underlyingAsset].variableBorrowIndex;
+    }
+
+    function getLastUpdateTime(address _underlyingAsset)
+        public
+        view
+        returns (uint256)
+    {
+        return underlyingAssetToReserve[_underlyingAsset].lastUpdateTime;
+    }
+
+    function getXToken(address _underlyingAsset) public view returns (address) {
+        return underlyingAssetToReserve[_underlyingAsset].xToken;
+    }
+
+    function getDebtToken(address _underlyingAsset)
+        public
+        view
+        returns (address)
+    {
+        return underlyingAssetToReserve[_underlyingAsset].debtToken;
     }
 }
