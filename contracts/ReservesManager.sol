@@ -144,6 +144,26 @@ contract ReservesManager is DSMath {
         underlyingAssetToReserve[_underlyingAsset] = reserve;
     }
 
+    function getVariableBorrowIndexSinceLastUpdate(address _underlyingAsset)
+        public
+        view
+        returns (uint256)
+    {
+        DataTypes.Reserve memory reserve;
+        reserve = underlyingAssetToReserve[_underlyingAsset];
+
+        uint256 secondsSinceLastupdate = block.timestamp -
+            reserve.lastUpdateTime;
+
+        uint256 variableBorrowIndex = updateVariableBorrowIndex(
+            reserve.variableBorrowIndex,
+            reserve.variableBorrowRate,
+            secondsSinceLastupdate
+        );
+
+        return variableBorrowIndex;
+    }
+
     function initReserve(
         address _underlyingAsset,
         uint256 _baseVariableBorrowRate,

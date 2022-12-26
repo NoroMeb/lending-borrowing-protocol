@@ -61,7 +61,9 @@ contract PoolConfiguration is Ownable {
         debtToken = new DebtToken(
             string.concat("debt", _name),
             string.concat("debt", _symbol),
-            poolAddress
+            _underlyingAsset,
+            poolAddress,
+            address(reservesManager)
         );
 
         reservesManager.initReserve(

@@ -88,6 +88,7 @@ def test_update_variable_borrow_index(
         seconds_since_latest_update,  # Web3.toWei(15, "ether")
     )
 
+    print(expected_variable_borrow_index)
     # assert
     assert variable_borrow_index / (10**18) == expected_variable_borrow_index
 
@@ -154,6 +155,23 @@ def test_update_state(add_token, init_reserve, reserves_manager, pool, dai):
 
     # assert
     assert reserves_manager.getReserve(dai) == expected_reserve or expected_reserve_2
+
+
+def test_get_variable_borrow_index_since_last_update(borrow, reserves_manager, dai):
+
+    # arrange
+    chain.sleep(15)
+    chain.mine(1)
+
+    expected_variable_borrow_index = 1 * (
+        1 + (3.75 / 31536000) * 18
+    )  # 18 seconds (chain.sleep(15) + 3 of the test) .
+
+    # act / assert
+    assert (
+        reserves_manager.getVariableBorrowIndexSinceLastUpdate(dai)
+        != expected_variable_borrow_index
+    )
 
 
 def test_get_total_deposited(init_reserve, reserves_manager, dai):

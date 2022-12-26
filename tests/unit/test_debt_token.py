@@ -1,9 +1,10 @@
-from brownie import DebtToken, Contract, reverts, DebtToken
+from brownie import DebtToken, Contract, reverts, DebtToken, chain
 from web3 import Web3
 from scripts.utils import get_account
+from conftest import BORROW_AMOUNT
 
 
-def test_debt_token_constructor(account, dai, pool):
+def test_debt_token_constructor(account, dai, pool, reserves_manager):
 
     # arrange
     name = "debtTEST"
@@ -11,7 +12,9 @@ def test_debt_token_constructor(account, dai, pool):
     pool_address = pool
 
     # act
-    debt_token = DebtToken.deploy(name, symbol, pool_address, {"from": account})
+    debt_token = DebtToken.deploy(
+        name, symbol, dai, pool_address, reserves_manager, {"from": account}
+    )
 
     # assert
     assert debt_token.name() == name
@@ -187,3 +190,23 @@ def test_decrease_allowance_debt_token_reverts(
     # act / assert
     with reverts("ALLOWANCE_NOT_SUPPORTED"):
         debt_token_contract.decreaseAllowance(spender, amount, {"from": account})
+
+
+def test_debt_token_balance_of(
+    add_token, borrow, pool_configuration, dai, account, reserves_manager
+):
+
+    # arrange
+    debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
+    debt_token_contract = Contract.from_abi(
+        "DebtToken", debt_token_address, DebtToken.abi
+    )
+
+    chain.sleep(10)
+    chain.mine(1)
+    expected_debt_token_balance = Web3.fromWei(
+        BORROW_AMOUNT, "ether"
+    ) * reserves_manager.getVariableBorrowIndexSinceLastUpdate(dai)
+
+    # assert
+    assert debt_token_contract.balanceOf(account) == expected_debt_token_balance

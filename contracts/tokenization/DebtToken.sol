@@ -3,8 +3,15 @@ pragma solidity ^0.8.12;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract DebtToken is ERC20 {
+import "./../ReservesManager.sol";
+
+import "@ds-math/src/math.sol";
+
+contract DebtToken is ERC20, DSMath {
     address public poolAddress;
+    address public underlyingAsset;
+
+    ReservesManager reservesManager;
 
     modifier onlyPool() {
         require(_msgSender() == poolAddress, "caller must be pool");
@@ -14,9 +21,13 @@ contract DebtToken is ERC20 {
     constructor(
         string memory _name,
         string memory _symbol,
-        address _poolAddress
+        address _underlyingAsset,
+        address _poolAddress,
+        address _reservesManagerAddress
     ) ERC20(_name, _symbol) {
         poolAddress = _poolAddress;
+        underlyingAsset = _underlyingAsset;
+        reservesManager = ReservesManager(_reservesManagerAddress);
     }
 
     function mint(address _account, uint256 _amount) external onlyPool {
@@ -107,6 +118,20 @@ contract DebtToken is ERC20 {
             return 0;
         }
 
-        return scaledBalance; // * INDEX;
+        // return scaledBalance;
+        // return wmul(scaledBalance, 1000000118912000000);
+        // return
+        //     wmul(
+        //         scaledBalance,
+        //         reservesManager.getVariableBorrowIndex(underlyingAsset)
+        //     );
+
+        return
+            wmul(
+                scaledBalance,
+                reservesManager.getVariableBorrowIndexSinceLastUpdate(
+                    underlyingAsset
+                )
+            );
     }
 }
