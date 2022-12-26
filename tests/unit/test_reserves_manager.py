@@ -39,7 +39,7 @@ def test_update_utilization_rate(reserves_manager):
     expexted_utilization_rate = total_borrowed / total_deposited  # basis points
 
     # act
-    utilization_rate = reserves_manager.updateUtilizationRate.call(
+    utilization_rate = reserves_manager._updateUtilizationRate.call(
         total_deposited, total_borrowed
     )
 
@@ -57,7 +57,7 @@ def test_update_variable_borrow_rate(reserves_manager):
     expected_variable_borrow_rate = 3.75
 
     # act
-    variable_borrow_rate = reserves_manager.updateVariableBorrowRate(
+    variable_borrow_rate = reserves_manager._updateVariableBorrowRate(
         utilization_rate,
         base_variable_borrow_rate,
         interest_rate_slope,
@@ -82,7 +82,7 @@ def test_update_variable_borrow_index(
         1 + (variable_borrow_rate / seconds_per_year) * seconds_since_latest_update
     )
     # act
-    variable_borrow_index = reserves_manager.updateVariableBorrowIndex(
+    variable_borrow_index = reserves_manager._updateVariableBorrowIndex(
         Web3.toWei(latest_variable_borrow_index, "ether"),
         Web3.toWei(variable_borrow_rate, "ether"),
         seconds_since_latest_update,  # Web3.toWei(15, "ether")

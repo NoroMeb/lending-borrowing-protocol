@@ -46,7 +46,7 @@ contract ReservesManager is DSMath {
     function updateUtilizationRate(
         uint256 _totalDeposited,
         uint256 _totalBorrowed
-    ) public pure returns (uint256) {
+    ) internal pure returns (uint256) {
         uint256 utilizationRate;
 
         if (_totalDeposited == 0) {
@@ -62,7 +62,7 @@ contract ReservesManager is DSMath {
         uint256 _utilizationRate,
         uint256 _baseVariableBorrowRate,
         uint256 _interestRateSlope
-    ) public pure returns (uint256) {
+    ) internal pure returns (uint256) {
         uint256 variableBorrowRate = add(
             _baseVariableBorrowRate,
             (wmul(_utilizationRate, _interestRateSlope))
@@ -75,7 +75,7 @@ contract ReservesManager is DSMath {
         uint256 _latestVariableBorrowIndex,
         uint256 _variableBorrowRate,
         uint256 _secondsSinceLastupdate
-    ) public pure returns (uint256) {
+    ) internal pure returns (uint256) {
         uint256 variableBorrowRatePerSecond = _variableBorrowRate /
             SECONDS_PER_YEAR;
 

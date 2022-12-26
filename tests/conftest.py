@@ -10,7 +10,7 @@ from brownie import (
     MockV3Aggregator,
     PoolLogicMock,
     PriceOracle,
-    ReservesManager,
+    ReservesManagerMock,
     chain,
 )
 
@@ -66,7 +66,7 @@ def pool_logic(account, pool_configuration):
 
 @pytest.fixture()
 def reserves_manager(account, pool_configuration, pool):
-    reserves_manager = ReservesManager.deploy(
+    reserves_manager = ReservesManagerMock.deploy(
         pool_configuration,
         pool,
         {"from": account},
