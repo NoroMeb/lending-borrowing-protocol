@@ -5,7 +5,6 @@ import "./../PoolLogic.sol";
 
 contract PoolLogicMock is PoolLogic {
     constructor(address _poolConfigurationAddress)
-        public
         PoolLogic(_poolConfigurationAddress)
     {}
 
@@ -18,6 +17,7 @@ contract PoolLogicMock is PoolLogic {
 
     function _getAmountInUSD(uint256 _amount, address _underlyingAsset)
         public
+        view
         returns (uint256)
     {
         return getAmountInUSD(_amount, _underlyingAsset);
