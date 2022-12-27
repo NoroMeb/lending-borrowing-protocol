@@ -118,14 +118,6 @@ contract DebtToken is ERC20, DSMath {
             return 0;
         }
 
-        // return scaledBalance;
-        // return wmul(scaledBalance, 1000000118912000000);
-        // return
-        //     wmul(
-        //         scaledBalance,
-        //         reservesManager.getVariableBorrowIndex(underlyingAsset)
-        //     );
-
         return
             wmul(
                 scaledBalance,
