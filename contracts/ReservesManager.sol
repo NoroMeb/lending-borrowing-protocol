@@ -171,24 +171,19 @@ contract ReservesManager is DSMath {
         address _xToken,
         address _debtToken
     ) public onlyPoolConfiguration {
-        uint256 totalDeposited = 0;
-        uint256 totalBorrowed = 0;
-        uint256 initialUitilizationRate = 0;
-        uint256 initialVariableBorrowIndex = 1000000000000000000;
-        uint256 lastUpdateTime = block.timestamp;
-        uint256 initialVariableBorrowRate = 0;
-
         DataTypes.Reserve memory reserve;
 
         reserve = DataTypes.Reserve(
-            totalDeposited,
-            totalBorrowed,
-            initialUitilizationRate,
-            initialVariableBorrowRate,
+            0,
+            0,
+            0,
+            0,
             _baseVariableBorrowRate,
             _interestRateSlope,
-            initialVariableBorrowIndex,
-            lastUpdateTime,
+            1000000000000000000,
+            0,
+            1000000000000000000,
+            block.timestamp,
             _xToken,
             _debtToken
         );
