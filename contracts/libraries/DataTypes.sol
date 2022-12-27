@@ -10,6 +10,8 @@ library DataTypes {
         uint256 baseVariableBorrowRate;
         uint256 interestRateSlope;
         uint256 variableBorrowIndex;
+        uint256 liquidityRate;
+        uint256 supplyIndex;
         uint256 lastUpdateTime;
         address xToken;
         address debtToken;
