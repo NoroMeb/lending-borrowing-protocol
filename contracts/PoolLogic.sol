@@ -15,6 +15,7 @@ contract PoolLogic {
 
     function getUserBalanceInUSD(address _account, address _underlyingAsset)
         internal
+        view
         returns (uint256)
     {
         address xToken = poolConfiguration.underlyingAssetToXtoken(
@@ -52,7 +53,7 @@ contract PoolLogic {
         address _account,
         address _underlyingAsset,
         uint256 _amount
-    ) public returns (bool) {
+    ) public view returns (bool) {
         require(_amount > 0, "Amount must be greater than 0");
         require(
             poolConfiguration.isAvailable(_underlyingAsset),
