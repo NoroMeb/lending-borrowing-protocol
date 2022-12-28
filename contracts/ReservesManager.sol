@@ -125,16 +125,26 @@ contract ReservesManager is DSMath {
             reserve.baseVariableBorrowRate,
             reserve.interestRateSlope
         );
+
+        uint256 liquidityRate = wmul(variableBorrowRate, utilizationRate);
+
         uint256 variableBorrowIndex = updateIndex(
             reserve.variableBorrowIndex,
             variableBorrowRate,
             secondsSinceLastupdate
         );
 
+        uint256 supplyIndex = updateIndex(
+            reserve.supplyIndex,
+            liquidityRate,
+            secondsSinceLastupdate
+        );
+
         reserve.utilizationRate = utilizationRate;
         reserve.variableBorrowRate = variableBorrowRate;
         reserve.variableBorrowIndex = variableBorrowIndex;
-
+        reserve.liquidityRate = liquidityRate;
+        reserve.supplyIndex = supplyIndex;
         reserve.lastUpdateTime = block.timestamp;
 
         underlyingAssetToReserve[_underlyingAsset] = reserve;
@@ -151,13 +161,33 @@ contract ReservesManager is DSMath {
         uint256 secondsSinceLastupdate = block.timestamp -
             reserve.lastUpdateTime;
 
-        uint256 variableBorrowIndex = updateVariableBorrowIndex(
+        uint256 variableBorrowIndex = updateIndex(
             reserve.variableBorrowIndex,
             reserve.variableBorrowRate,
             secondsSinceLastupdate
         );
 
         return variableBorrowIndex;
+    }
+
+    function getSupplyIndexSinceLastUpdate(address _underlyingAsset)
+        public
+        view
+        returns (uint256)
+    {
+        DataTypes.Reserve memory reserve;
+        reserve = underlyingAssetToReserve[_underlyingAsset];
+
+        uint256 secondsSinceLastupdate = block.timestamp -
+            reserve.lastUpdateTime;
+
+        uint256 supplyIndex = updateIndex(
+            reserve.supplyIndex,
+            reserve.liquidityRate,
+            secondsSinceLastupdate
+        );
+
+        return supplyIndex;
     }
 
     function initReserve(
@@ -241,6 +271,22 @@ contract ReservesManager is DSMath {
         returns (uint256)
     {
         return underlyingAssetToReserve[_underlyingAsset].variableBorrowIndex;
+    }
+
+    function getLiquidityRate(address _underlyingAsset)
+        public
+        view
+        returns (uint256)
+    {
+        return underlyingAssetToReserve[_underlyingAsset].liquidityRate;
+    }
+
+    function getSupplyIndex(address _underlyingAsset)
+        public
+        view
+        returns (uint256)
+    {
+        return underlyingAssetToReserve[_underlyingAsset].supplyIndex;
     }
 
     function getLastUpdateTime(address _underlyingAsset)

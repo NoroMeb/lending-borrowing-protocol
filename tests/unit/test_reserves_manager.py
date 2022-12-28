@@ -99,9 +99,28 @@ def test_init_reserve(init_reserve, initial_reserve, reserves_manager, dai):
     assert reserves_manager.underlyingAssetToReserve(dai) == initial_reserve
 
 
+def test_only_pool_configuration_can_init_reserve(
+    add_token, reserves_manager, dai, account
+):
+
+    x_token = add_token[0]
+    debt_token = add_token[1]
+
+    with reverts("caller must be pool configuration"):
+        reserves_manager.initReserve(
+            dai,
+            BASE_VARIABLE_BORROW_RATE,
+            INTEREST_RATE_SLOPE,
+            x_token,
+            debt_token,
+            {"from": account},
+        )
+
+
 def test_get_reserve(reserves_manager, init_reserve, initial_reserve, dai):
 
     # act / assert
+    print(len(initial_reserve))
     assert reserves_manager.getReserve(dai) == initial_reserve
 
 
@@ -160,18 +179,35 @@ def test_update_state(add_token, init_reserve, reserves_manager, pool, dai):
 def test_get_variable_borrow_index_since_last_update(borrow, reserves_manager, dai):
 
     # arrange
-    chain.sleep(15)
+    chain.sleep(10)
     chain.mine(1)
 
     expected_variable_borrow_index = 1 * (
-        1 + (3.75 / 31536000) * 18
+        1 + (3.75 / 31536000) * 13
+    )  # 13 seconds (chain.sleep(10) + 3 of the test) .
+
+    print(reserves_manager.getVariableBorrowIndexSinceLastUpdate(dai) / (10**18))
+
+    # act / assert
+    assert reserves_manager.getVariableBorrowIndexSinceLastUpdate(dai) / (
+        10**18
+    ) == pytest.approx(expected_variable_borrow_index)
+
+
+def test_get_supply_index_since_last_update(borrow, reserves_manager, dai):
+
+    # arrange
+    chain.sleep(10)
+    chain.mine(1)
+
+    expected_supply_index = 1 * (
+        1 + ((3.75 * 0.75) / 31536000) * 13
     )  # 18 seconds (chain.sleep(15) + 3 of the test) .
 
     # act / assert
-    assert (
-        reserves_manager.getVariableBorrowIndexSinceLastUpdate(dai)
-        != expected_variable_borrow_index
-    )
+    assert reserves_manager.getSupplyIndexSinceLastUpdate(dai) / (
+        10**18
+    ) == pytest.approx(expected_supply_index)
 
 
 def test_get_total_deposited(init_reserve, reserves_manager, dai):
@@ -214,6 +250,18 @@ def test_get_variable_borrow_index(init_reserve, reserves_manager, dai):
 
     # act / assert
     assert reserves_manager.getVariableBorrowIndex(dai) == Web3.toWei(1, "ether")
+
+
+def test_get_liquidity_rate(init_reserve, reserves_manager, dai):
+
+    # act / assert
+    assert reserves_manager.getLiquidityRate(dai) == 0
+
+
+def test_get_supply_index(init_reserve, reserves_manager, dai):
+
+    # act / assert
+    assert reserves_manager.getSupplyIndex(dai) == Web3.toWei(1, "ether")
 
 
 def test_get_last_update_time(init_reserve, reserves_manager, dai):

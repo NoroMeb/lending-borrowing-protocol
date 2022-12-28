@@ -227,6 +227,8 @@ def initial_reserve(add_token):
     base_variable_borrow_rate = BASE_VARIABLE_BORROW_RATE
     interest_rate_slope = INTEREST_RATE_SLOPE
     initial_variable_borrow_index = Web3.toWei(1, "ether")
+    initial_liquidity_rate = 0
+    initial_supply_index = Web3.toWei(1, "ether")
     last_update_time = chain[-1].timestamp
     x_token = add_token[0]
     debt_token = add_token[1]
@@ -239,6 +241,8 @@ def initial_reserve(add_token):
         base_variable_borrow_rate,
         interest_rate_slope,
         initial_variable_borrow_index,
+        initial_liquidity_rate,
+        initial_supply_index,
         last_update_time,
         x_token,
         debt_token,
