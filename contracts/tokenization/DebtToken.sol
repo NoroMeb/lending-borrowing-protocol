@@ -11,7 +11,7 @@ contract DebtToken is ERC20, DSMath {
     address public poolAddress;
     address public underlyingAsset;
 
-    ReservesManager reservesManager;
+    ReservesManager public reservesManager;
 
     modifier onlyPool() {
         require(_msgSender() == poolAddress, "caller must be pool");

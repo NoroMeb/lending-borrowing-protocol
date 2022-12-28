@@ -20,6 +20,7 @@ def test_debt_token_constructor(account, dai, pool, reserves_manager):
     assert debt_token.name() == name
     assert debt_token.symbol() == name
     assert debt_token.poolAddress() == pool_address
+    assert debt_token.reservesManager() == reserves_manager
 
 
 def test_mint_debt_token(add_token, account, pool, pool_configuration, dai):
@@ -207,6 +208,8 @@ def test_debt_token_balance_of(
     expected_debt_token_balance = Web3.fromWei(
         BORROW_AMOUNT, "ether"
     ) * reserves_manager.getVariableBorrowIndexSinceLastUpdate(dai)
+
+    print(debt_token_contract.balanceOf(account))
 
     # assert
     assert debt_token_contract.balanceOf(account) == expected_debt_token_balance
