@@ -71,23 +71,19 @@ contract ReservesManager is DSMath {
         return variableBorrowRate;
     }
 
-    function updateVariableBorrowIndex(
-        uint256 _latestVariableBorrowIndex,
-        uint256 _variableBorrowRate,
+    function updateIndex(
+        uint256 _latestIndex,
+        uint256 _rate,
         uint256 _secondsSinceLastupdate
     ) internal pure returns (uint256) {
-        uint256 variableBorrowRatePerSecond = _variableBorrowRate /
-            SECONDS_PER_YEAR;
+        uint256 ratePerSecond = _rate / SECONDS_PER_YEAR;
 
-        uint256 variableBorrowIndex = wmul(
-            _latestVariableBorrowIndex,
-            add(
-                1000000000000000000,
-                variableBorrowRatePerSecond * _secondsSinceLastupdate
-            )
+        uint256 index = wmul(
+            _latestIndex,
+            add(1000000000000000000, ratePerSecond * _secondsSinceLastupdate)
         );
 
-        return variableBorrowIndex;
+        return index;
     }
 
     // operation : value
@@ -129,7 +125,7 @@ contract ReservesManager is DSMath {
             reserve.baseVariableBorrowRate,
             reserve.interestRateSlope
         );
-        uint256 variableBorrowIndex = updateVariableBorrowIndex(
+        uint256 variableBorrowIndex = updateIndex(
             reserve.variableBorrowIndex,
             variableBorrowRate,
             secondsSinceLastupdate

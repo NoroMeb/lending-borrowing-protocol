@@ -67,7 +67,7 @@ def test_update_variable_borrow_rate(reserves_manager):
     assert variable_borrow_rate / 10**18 == expected_variable_borrow_rate
 
 
-def test_update_variable_borrow_index(
+def test_update_index(
     reserves_manager, dai, account, pool_configuration, pool, add_token
 ):
 
@@ -82,7 +82,7 @@ def test_update_variable_borrow_index(
         1 + (variable_borrow_rate / seconds_per_year) * seconds_since_latest_update
     )
     # act
-    variable_borrow_index = reserves_manager._updateVariableBorrowIndex(
+    variable_borrow_index = reserves_manager._updateIndex(
         Web3.toWei(latest_variable_borrow_index, "ether"),
         Web3.toWei(variable_borrow_rate, "ether"),
         seconds_since_latest_update,  # Web3.toWei(15, "ether")

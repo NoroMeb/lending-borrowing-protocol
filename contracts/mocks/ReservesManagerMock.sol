@@ -28,16 +28,11 @@ contract ReservesManagerMock is ReservesManager {
             );
     }
 
-    function _updateVariableBorrowIndex(
-        uint256 _latestVariableBorrowIndex,
-        uint256 _variableBorrowRate,
+    function _updateIndex(
+        uint256 _latestIndex,
+        uint256 _rate,
         uint256 _secondsSinceLastupdate
     ) public pure returns (uint256) {
-        return
-            super.updateVariableBorrowIndex(
-                _latestVariableBorrowIndex,
-                _variableBorrowRate,
-                _secondsSinceLastupdate
-            );
+        return super.updateIndex(_latestIndex, _rate, _secondsSinceLastupdate);
     }
 }
