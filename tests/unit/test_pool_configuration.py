@@ -10,6 +10,29 @@ def test_pool_configuration_constructor(pool_configuration, pool):
     assert pool_configuration.poolAddress() == pool.address
 
 
+def test_set_reserve_manager_contract(pool_configuration, reserves_manager, account):
+
+    # act
+    pool_configuration.setReserveManagerContract(reserves_manager, {"from": account})
+
+    # assert
+    assert pool_configuration.reservesManager() == reserves_manager
+
+
+def test_only_owner_can_set_reserve_manager_contract(
+    pool_configuration, reserves_manager
+):
+
+    # arrange
+    non_owner = get_account(index=2)
+
+    # act / assert
+    with reverts("Ownable: caller is not the owner"):
+        pool_configuration.setReserveManagerContract(
+            reserves_manager, {"from": non_owner}
+        )
+
+
 def test_only_owner_can_add_token(dai, mock_v3_aggregator, pool_configuration):
 
     # arrange

@@ -1,9 +1,9 @@
-from brownie import XToken, Contract, reverts
+from brownie import XToken, Contract, reverts, chain
 from web3 import Web3
-from conftest import SUPPLY_AMOUNT
+from conftest import SUPPLY_AMOUNT, BORROW_AMOUNT
 
 
-def test_xtoken_constructor(account, dai, pool):
+def test_xtoken_constructor(account, dai, pool, reserves_manager):
 
     # arrange
     name = "TEST"
@@ -13,7 +13,12 @@ def test_xtoken_constructor(account, dai, pool):
 
     # act
     x_token = XToken.deploy(
-        name, symbol, underlying_asset, pool_address, {"from": account}
+        name,
+        symbol,
+        underlying_asset,
+        pool_address,
+        reserves_manager,
+        {"from": account},
     )
 
     # assert
@@ -21,6 +26,7 @@ def test_xtoken_constructor(account, dai, pool):
     assert x_token.symbol() == symbol
     assert x_token.poolAddress() == pool_address
     assert x_token.underlyingAsset() == underlying_asset
+    assert x_token.reservesManager() == reserves_manager
 
 
 def test_mint_xtoken(add_token, account, pool, pool_configuration, dai):
@@ -106,3 +112,23 @@ def test_only_pool_can_transfer_underlying_asset(
     # act
     with reverts("caller must be pool"):
         x_token_contract.transferUnderlyingAssetTo(account, amount, {"from": account})
+
+
+def test_xtoken_balance_of(
+    add_token, supply, borrow, pool_configuration, dai, account, reserves_manager
+):
+
+    # arrange
+    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
+    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
+
+    chain.sleep(10)
+    chain.mine(1)
+    expected_xtoken_balance = Web3.fromWei(
+        SUPPLY_AMOUNT - BORROW_AMOUNT, "ether"
+    ) * reserves_manager.getSupplyIndexSinceLastUpdate(dai)
+
+    print(reserves_manager.getSupplyIndexSinceLastUpdate(dai) / (10**18))
+
+    # assert
+    assert x_token_contract.balanceOf(account) == expected_xtoken_balance
