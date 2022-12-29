@@ -8,11 +8,12 @@ contract PoolLogicMock is PoolLogic {
         PoolLogic(_poolConfigurationAddress)
     {}
 
-    function _getUserBalanceInUSD(address _account, address _underlyingAsset)
+    function _getUserBalanceInUSD(address _account)
         public
+        view
         returns (uint256)
     {
-        return getUserBalanceInUSD(_account, _underlyingAsset);
+        return getUserBalanceInUSD(_account);
     }
 
     function _getAmountInUSD(uint256 _amount, address _underlyingAsset)

@@ -13,23 +13,29 @@ contract PoolLogic {
         poolConfiguration = PoolConfiguration(_poolConfigurationAddress);
     }
 
-    function getUserBalanceInUSD(address _account, address _underlyingAsset)
+    function getUserBalanceInUSD(address _account)
         internal
         view
         returns (uint256)
     {
-        address xToken = poolConfiguration.underlyingAssetToXtoken(
-            _underlyingAsset
-        );
-        uint256 userBalance = IXToken(xToken).balanceOf(_account);
+        address[] memory tokens = poolConfiguration.getTokens();
+        address underlyingAsset;
+        address xToken;
+        uint256 userBalanceInUSD = 0;
+        for (uint256 index = 0; index < tokens.length; index++) {
+            underlyingAsset = tokens[index];
+            xToken = poolConfiguration.underlyingAssetToXtoken(underlyingAsset);
+            uint256 userXTokenBalance = IXToken(xToken).balanceOf(_account);
 
-        address priceOracleAddress = poolConfiguration
-            .underlyingAssetToPriceOracle(_underlyingAsset);
-        PriceOracle priceOracle = PriceOracle(priceOracleAddress);
+            address priceOracleAddress = poolConfiguration
+                .underlyingAssetToPriceOracle(underlyingAsset);
+            PriceOracle priceOracle = PriceOracle(priceOracleAddress);
+            uint256 assetPrice = priceOracle.getLatestPrice();
+            uint256 userXTokenBalanceInUSD = userXTokenBalance * assetPrice;
 
-        uint256 assetPrice = priceOracle.getLatestPrice();
+            userBalanceInUSD = userBalanceInUSD + userXTokenBalanceInUSD;
+        }
 
-        uint256 userBalanceInUSD = userBalance * assetPrice;
         return userBalanceInUSD;
     }
 
@@ -60,10 +66,7 @@ contract PoolLogic {
             "token not available"
         );
 
-        uint256 userBalanceInUSD = getUserBalanceInUSD(
-            _account,
-            _underlyingAsset
-        );
+        uint256 userBalanceInUSD = getUserBalanceInUSD(_account);
 
         uint256 amountInUSD = getAmountInUSD(_amount, _underlyingAsset);
 

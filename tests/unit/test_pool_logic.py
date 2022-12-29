@@ -12,7 +12,7 @@ def test_pool_logic_constructor(pool_logic, pool_configuration):
 def test_get_user_balance_in_usd(pool_logic, supply, account, dai):
 
     # act /assert
-    assert pool_logic._getUserBalanceInUSD.call(account, dai) == SUPPLY_AMOUNT * PRICE
+    assert pool_logic._getUserBalanceInUSD.call(account) == SUPPLY_AMOUNT * PRICE
 
 
 def test_get_amount_in_usd(add_token, pool_logic, dai):
