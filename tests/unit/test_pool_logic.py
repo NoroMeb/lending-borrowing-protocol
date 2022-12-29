@@ -1,6 +1,7 @@
-from conftest import PRICE, SUPPLY_AMOUNT
+from conftest import PRICE, SUPPLY_AMOUNT, BORROW_AMOUNT
 from web3 import Web3
 from brownie import reverts, Contract, XToken
+import pytest
 
 
 def test_pool_logic_constructor(pool_logic, pool_configuration):
@@ -103,3 +104,11 @@ def test_validate_withdraw_correct_amount(account, supply, pool_logic, dai):
         pool_logic.validateWithdraw.call(account, dai, SUPPLY_AMOUNT, {"from": account})
         == True
     )
+
+
+def test_get_user_debt_in_usd(pool_logic, borrow, account, dai):
+
+    # act /assert
+    assert int(
+        pool_logic._getUserDebtInUSD.call(account) / (10**18)
+    ) == BORROW_AMOUNT * PRICE / (10**18)

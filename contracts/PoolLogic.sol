@@ -2,6 +2,7 @@
 pragma solidity ^0.8.12;
 
 import "../interfaces/IXToken.sol";
+import "../interfaces/IDebtToken.sol";
 import "./PriceOracle.sol";
 import "./PoolConfiguration.sol";
 
@@ -37,6 +38,36 @@ contract PoolLogic {
         }
 
         return userBalanceInUSD;
+    }
+
+    function getUserDebtInUSD(address _account)
+        internal
+        view
+        returns (uint256)
+    {
+        address[] memory tokens = poolConfiguration.getTokens();
+        address underlyingAsset;
+        address debtToekn;
+        uint256 userDebtInUSD = 0;
+        for (uint256 index = 0; index < tokens.length; index++) {
+            underlyingAsset = tokens[index];
+            debtToekn = poolConfiguration.underlyingAssetToDebtToken(
+                underlyingAsset
+            );
+            uint256 userXTokenBalance = IDebtToken(debtToekn).balanceOf(
+                _account
+            );
+
+            address priceOracleAddress = poolConfiguration
+                .underlyingAssetToPriceOracle(underlyingAsset);
+            PriceOracle priceOracle = PriceOracle(priceOracleAddress);
+            uint256 assetPrice = priceOracle.getLatestPrice();
+            uint256 userDebtTokenBalanceInUSD = userXTokenBalance * assetPrice;
+
+            userDebtInUSD = userDebtInUSD + userDebtTokenBalanceInUSD;
+        }
+
+        return userDebtInUSD;
     }
 
     function getAmountInUSD(uint256 _amount, address _underlyingAsset)
