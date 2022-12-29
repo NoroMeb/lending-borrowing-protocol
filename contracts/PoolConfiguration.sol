@@ -23,6 +23,8 @@ contract PoolConfiguration is Ownable {
     mapping(address => address) public underlyingAssetToPriceOracle;
     mapping(address => DataTypes.Reserve) public underlyingAssetToReserve;
 
+    address[] public tokens;
+
     constructor(address _poolAddress) {
         poolAddress = _poolAddress;
     }
@@ -82,7 +84,12 @@ contract PoolConfiguration is Ownable {
         priceOracle = new PriceOracle(_priceFeedAddress, _decimals);
 
         underlyingAssetToPriceOracle[_underlyingAsset] = address(priceOracle);
+        tokens.push(_underlyingAsset);
 
         return (address(xtoken), address(debtToken), address(priceOracle));
+    }
+
+    function getTokens() public view returns (address[] memory) {
+        return tokens;
     }
 }

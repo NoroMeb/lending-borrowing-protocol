@@ -135,3 +135,13 @@ def test_add_token_init_new_reserve(
 
     # assert
     assert reserves_manager.getReserve(dai) == initial_reserve
+
+
+def test_add_token_pushes_underlying_assset_tokens_array(
+    add_token, pool_configuration, dai
+):
+
+    # assert
+    assert pool_configuration.tokens(0) == dai
+    with reverts():
+        pool_configuration.tokens(1)
