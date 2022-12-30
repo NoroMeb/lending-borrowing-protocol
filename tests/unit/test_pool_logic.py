@@ -1,6 +1,6 @@
-from conftest import PRICE, SUPPLY_AMOUNT, BORROW_AMOUNT
+from conftest import PRICE, SUPPLY_AMOUNT, BORROW_AMOUNT, get_account
 from web3 import Web3
-from brownie import reverts, Contract, XToken
+from brownie import reverts, Contract, XToken, PriceOracle, DebtToken
 import pytest
 
 
@@ -13,7 +13,7 @@ def test_pool_logic_constructor(pool_logic, pool_configuration):
 def test_get_user_balance_in_usd(pool_logic, supply, account, dai):
 
     # act /assert
-    assert pool_logic._getUserBalanceInUSD.call(account) == SUPPLY_AMOUNT * PRICE
+    assert pool_logic._getUserBalanceInUSD.call(account, dai) == SUPPLY_AMOUNT * PRICE
 
 
 def test_get_amount_in_usd(add_token, pool_logic, dai):
@@ -110,5 +110,5 @@ def test_get_user_debt_in_usd(pool_logic, borrow, account, dai):
 
     # act /assert
     assert int(
-        pool_logic._getUserDebtInUSD.call(account) / (10**18)
+        pool_logic._getUserDebtInUSD.call(account, dai) / (10**18)
     ) == BORROW_AMOUNT * PRICE / (10**18)
