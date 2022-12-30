@@ -41,19 +41,30 @@ contract Pool is Ownable {
         reservesManager.updateState(_asset, _amount, 0);
     }
 
-    function borrow(address _asset, uint256 _amount) public returns (uint256) {
+    function borrow(
+        address _asset,
+        uint256 _amount,
+        address _collateral
+    ) public returns (uint256) {
         address xtoken = poolConfiguration.underlyingAssetToXtoken(_asset);
         address debtToken = poolConfiguration.underlyingAssetToDebtToken(
             _asset
         );
+        address collateralXToken = poolConfiguration.underlyingAssetToXtoken(
+            _collateral
+        );
 
-        bool isValid = poolLogic.validateBorrow(msg.sender, _asset, _amount);
+        bool isValid = poolLogic.validateBorrow(
+            msg.sender,
+            _collateral,
+            _amount
+        );
 
         if (!isValid) {
             return 0;
         } else {
             IXToken(xtoken).transferUnderlyingAssetTo(msg.sender, _amount);
-            IXToken(xtoken).burn(msg.sender, _amount);
+            IXToken(collateralXToken).burn(msg.sender, _amount);
 
             IDebtToken(debtToken).mint(msg.sender, _amount);
 

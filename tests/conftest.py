@@ -178,7 +178,7 @@ def price_oracle(account, mock_v3_aggregator):
 def borrow(
     supply, dai, pool, set_pool_logic_address, set_reserves_manager_address, account
 ):
-    pool.borrow(dai, BORROW_AMOUNT, {"from": account})
+    pool.borrow(dai, BORROW_AMOUNT, dai, {"from": account})
 
 
 @pytest.fixture()
