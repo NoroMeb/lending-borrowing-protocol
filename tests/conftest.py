@@ -89,9 +89,10 @@ def account_initial_dai_balance(dai, account):
 
 
 @pytest.fixture()
-def link(account):
+def link():
+    account = get_account(index=2)
     link = LinkTokenMock.deploy({"from": account})
-
+    link.LinkToken({"from": account})
     return link
 
 
@@ -117,6 +118,38 @@ def add_token(
     name = "DAI"
     symbol = "DAI"
     underlying_asset = dai
+    price_feed_address = mock_v3_aggregator
+    decimals = 18
+    base_variable_borrow_rate = BASE_VARIABLE_BORROW_RATE
+    interest_rate_slope = INTEREST_RATE_SLOPE
+
+    add_token_tx = pool_configuration.addToken(
+        name,
+        symbol,
+        underlying_asset,
+        price_feed_address,
+        decimals,
+        base_variable_borrow_rate,
+        interest_rate_slope,
+        {"from": account},
+    )
+
+    x_token, debt_token, price_oracle = add_token_tx.return_value
+
+    return x_token, debt_token, price_oracle
+
+
+@pytest.fixture()
+def add_token_link(
+    account,
+    link,
+    mock_v3_aggregator,
+    pool_configuration,
+    pool_configuration_set_reserves_manager_contract,
+):
+    name = "LINK"
+    symbol = "LINK"
+    underlying_asset = link
     price_feed_address = mock_v3_aggregator
     decimals = 18
     base_variable_borrow_rate = BASE_VARIABLE_BORROW_RATE
