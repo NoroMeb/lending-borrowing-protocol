@@ -63,17 +63,18 @@ contract Pool is Ownable {
             _collateral
         );
 
-        bool isValid = poolLogic.validateBorrow(
+        (bool isValid, uint256 amountOfCollateral) = poolLogic.validateBorrow(
             msg.sender,
-            _collateral,
-            _amount
+            _asset,
+            _amount,
+            _collateral
         );
 
         if (!isValid) {
             return 0;
         } else {
             IXToken(xtoken).transferUnderlyingAssetTo(msg.sender, _amount);
-            IXToken(collateralXToken).burn(msg.sender, _amount);
+            IXToken(collateralXToken).burn(msg.sender, amountOfCollateral);
 
             IDebtToken(debtToken).mint(msg.sender, _amount);
 
@@ -98,7 +99,7 @@ contract Pool is Ownable {
             IXToken(xtoken).burn(msg.sender, _amount);
             reservesManager.updateState(_asset, _amount, 2);
             userToCollateralToAmount[msg.sender][_asset] =
-                userToCollateralToAmount[msg.sender][_asset] +
+                userToCollateralToAmount[msg.sender][_asset] -
                 _amount;
 
             return _amount;
@@ -121,12 +122,25 @@ contract Pool is Ownable {
             "the amount exceeds the debt"
         );
 
-        address xtoken = poolConfiguration.underlyingAssetToXtoken(_asset);
-        IERC20(_asset).transferFrom(msg.sender, xtoken, _amount);
-        IXToken(xtoken).mint(msg.sender, _amount);
+        address collateral = userToBorrowedAssetToCollateral[msg.sender][
+            _asset
+        ];
+
+        address asset_xtoken = poolConfiguration.underlyingAssetToXtoken(
+            _asset
+        );
+        address collateral_xtoken = poolConfiguration.underlyingAssetToXtoken(
+            collateral
+        );
+        IERC20(_asset).transferFrom(msg.sender, asset_xtoken, _amount);
+        IXToken(collateral_xtoken).mint(
+            msg.sender,
+            poolLogic.getCollateralAmountToMint(_asset, _amount, collateral)
+        );
         IDebtToken(debtToken).burn(msg.sender, _amount);
         reservesManager.updateState(_asset, _amount, 3);
     }
+
     function liquidationCall(
         address _user,
         address _asset,
