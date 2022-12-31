@@ -112,3 +112,71 @@ def test_get_user_debt_in_usd(pool_logic, borrow, account, dai):
     assert int(
         pool_logic._getUserDebtInUSD.call(account, dai) / (10**18)
     ) == BORROW_AMOUNT * PRICE / (10**18)
+
+
+def test_get_collateral_amount_to_mint(add_token, pool_logic, dai):
+
+    # arrange
+    amount = Web3.toWei(100, "ether")
+
+    # act / assert
+    assert pool_logic.getCollateralAmountToMint(dai, amount, dai) == Web3.toWei(
+        100, "ether"
+    )
+
+
+def test_validate_liquidation_non_undercollateralized(
+    add_token_link,
+    supply,
+    add_token,
+    set_pool_configuration_address,
+    set_reserves_manager_address,
+    set_pool_logic_address,
+    pool_logic,
+    pool,
+    account,
+    dai,
+    link,
+):
+
+    # arrange
+    link.approve(pool, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.supply(link, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.borrow(link, BORROW_AMOUNT, dai, {"from": account})
+
+    # act
+    assert pool_logic.validateLiquidation(account, link, dai, SUPPLY_AMOUNT) == (
+        False,
+        0,
+    )
+
+
+def test_validate_liquidation_undercollateralized(
+    add_token_link,
+    supply,
+    add_token,
+    set_pool_configuration_address,
+    set_reserves_manager_address,
+    set_pool_logic_address,
+    pool_logic,
+    pool,
+    account,
+    dai,
+    link,
+    mock_v3_aggregator_link,
+):
+
+    # arrange
+    link.approve(pool, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.supply(link, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.borrow(link, BORROW_AMOUNT, dai, {"from": account})
+
+    new_price = Web3.toWei(20, "ether")
+
+    mock_v3_aggregator_link.updateAnswer(new_price)
+
+    # act / assert
+    isValid, undercollateralized_amount = pool_logic.validateLiquidation(
+        account, link, dai, SUPPLY_AMOUNT
+    )
+    assert isValid, int(undercollateralized_amount / (10**18)) == (True, 50)

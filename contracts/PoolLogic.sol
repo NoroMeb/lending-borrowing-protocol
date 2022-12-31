@@ -137,4 +137,31 @@ contract PoolLogic is DSMath {
         return amountOfAssetInUSD / collateralPrice;
     }
 
+    function validateLiquidation(
+        address _user,
+        address _asset,
+        address _collateral,
+        uint256 _collateralAmount
+    ) public view returns (bool, uint256) {
+        uint256 collateralInUSD = getAmountInUSD(
+            _collateralAmount,
+            _collateral
+        );
+        uint256 debtInUSD = getUserDebtInUSD(_user, _asset);
+
+        if (collateralInUSD >= debtInUSD) {
+            return (false, 0);
+        } else {
+            uint256 undercollateralizedAmountInUSD = debtInUSD -
+                collateralInUSD;
+
+            address priceOracleAddress = poolConfiguration
+                .underlyingAssetToPriceOracle(_collateral);
+            PriceOracle priceOracle = PriceOracle(priceOracleAddress);
+
+            uint256 assetPrice = priceOracle.getLatestPrice();
+
+            return (true, undercollateralizedAmountInUSD / assetPrice);
+        }
+    }
 }
