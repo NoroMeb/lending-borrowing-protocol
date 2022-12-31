@@ -29,7 +29,7 @@ def test_validate_borrow_null_amount(supply, pool_logic, account, dai):
 
     # act / assert
     with reverts("Amount must be greater than 0"):
-        pool_logic.validateBorrow(account, dai, 0, {"from": account})
+        pool_logic.validateBorrow(account, dai, 0, dai, {"from": account})
 
 
 def test_validate_borrow_non_available_token(supply, pool_logic, account, link):
@@ -39,7 +39,7 @@ def test_validate_borrow_non_available_token(supply, pool_logic, account, link):
 
     # act / assert
     with reverts("token not available"):
-        pool_logic.validateBorrow(account, link, amount, {"from": account})
+        pool_logic.validateBorrow(account, link, amount, link, {"from": account})
 
 
 def test_validate_borrow_amount_greater_than_max_amount_in_usd(
@@ -50,9 +50,9 @@ def test_validate_borrow_amount_greater_than_max_amount_in_usd(
     amount = Web3.toWei(76, "ether")
 
     # act / assert
-    assert (
-        pool_logic.validateBorrow.call(account, dai, amount, {"from": account}) == False
-    )
+    assert pool_logic.validateBorrow.call(
+        account, dai, amount, dai, {"from": account}
+    ) == (False, 0)
 
 
 def test_validate_borrow_correct_amount(account, supply, pool_logic, dai):
@@ -61,9 +61,9 @@ def test_validate_borrow_correct_amount(account, supply, pool_logic, dai):
     amount = Web3.toWei(75, "ether")
 
     # act / assert
-    assert (
-        pool_logic.validateBorrow.call(account, dai, amount, {"from": account}) == True
-    )
+    assert pool_logic.validateBorrow.call(
+        account, dai, amount, dai, {"from": account}
+    ) == (True, amount)
 
 
 def test_validate_withdraw_null_amount(supply, pool_logic, account, dai):
