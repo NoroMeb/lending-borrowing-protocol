@@ -108,6 +108,17 @@ def mock_v3_aggregator(account):
 
 
 @pytest.fixture()
+def mock_v3_aggregator_link(account):
+    decimals = 18
+    initial_answer = Web3.toWei(PRICE, "ether")
+    mock_v3_aggregator_link = MockV3Aggregator.deploy(
+        decimals, initial_answer, {"from": account}
+    )
+
+    return mock_v3_aggregator_link
+
+
+@pytest.fixture()
 def add_token(
     account,
     dai,
@@ -143,14 +154,14 @@ def add_token(
 def add_token_link(
     account,
     link,
-    mock_v3_aggregator,
+    mock_v3_aggregator_link,
     pool_configuration,
     pool_configuration_set_reserves_manager_contract,
 ):
     name = "LINK"
     symbol = "LINK"
     underlying_asset = link
-    price_feed_address = mock_v3_aggregator
+    price_feed_address = mock_v3_aggregator_link
     decimals = 18
     base_variable_borrow_rate = BASE_VARIABLE_BORROW_RATE
     interest_rate_slope = INTEREST_RATE_SLOPE
