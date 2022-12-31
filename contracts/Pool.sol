@@ -127,4 +127,46 @@ contract Pool is Ownable {
         IDebtToken(debtToken).burn(msg.sender, _amount);
         reservesManager.updateState(_asset, _amount, 3);
     }
+    function liquidationCall(
+        address _user,
+        address _asset,
+        uint256 _amount,
+        address _collateral
+    ) public returns (bool) {
+        require(_amount > 0, "insufficient amount");
+        require(poolConfiguration.isAvailable(_asset), "token not available");
+        require(
+            poolConfiguration.isAvailable(_collateral),
+            "token not available"
+        );
+        (bool isValid, uint256 undercollateralizedAmount) = poolLogic
+            .validateLiquidation(
+                _user,
+                _asset,
+                _collateral,
+                userToCollateralToAmount[_user][_collateral]
+            );
+
+        if (!isValid) {
+            return false;
+        } else {
+            require(
+                _amount <= undercollateralizedAmount,
+                "amount exceeds undercollateralized amount"
+            );
+            address asset_xtoken = poolConfiguration.underlyingAssetToXtoken(
+                _asset
+            );
+            address collateral_xtoken = poolConfiguration
+                .underlyingAssetToXtoken(_collateral);
+            address debtToken = poolConfiguration.underlyingAssetToDebtToken(
+                _asset
+            );
+            IERC20(_asset).transferFrom(msg.sender, asset_xtoken, _amount);
+            IXToken(collateral_xtoken).mint(msg.sender, _amount);
+            IDebtToken(debtToken).burn(_user, _amount);
+
+            return true;
+        }
+    }
 }

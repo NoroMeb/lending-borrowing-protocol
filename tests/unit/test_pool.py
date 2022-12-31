@@ -130,7 +130,15 @@ def test_borrow_burn_amount_of_xtoken(borrow, pool_configuration, dai, account):
     expected = Web3.toWei(25, "ether")
 
     # assert
-    assert x_token_contract.balanceOf(account) != SUPPLY_AMOUNT
+    assert int(x_token_contract.balanceOf(account) / (10**18)) == (
+        SUPPLY_AMOUNT - BORROW_AMOUNT
+    ) / (10**18)
+
+
+def test_borrow_map_user_asset_borrowed_to_collateral(borrow, pool, account, dai):
+
+    # assert
+    assert pool.userToBorrowedAssetToCollateral(account, dai) == dai
 
 
 def test_borrow_mint_debt_token(borrow, pool_configuration, dai, account):
@@ -439,3 +447,67 @@ def test_update_state_on_repay(repay, add_token, reserves_manager, dai):
         reserves_manager.getReserve(dai) == expected_updated_reserve
         or expected_updated_reserve_2
     )
+
+
+def test_liquidation_call_nul_amount(
+    add_token_link,
+    supply,
+    add_token,
+    set_pool_configuration_address,
+    set_reserves_manager_address,
+    set_pool_logic_address,
+    pool_logic,
+    pool,
+    account,
+    dai,
+    link,
+    mock_v3_aggregator_link,
+):
+
+    # arrange
+    link.approve(pool, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.supply(link, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.borrow(link, BORROW_AMOUNT, dai, {"from": account})
+
+    new_price = Web3.toWei(20, "ether")
+
+    mock_v3_aggregator_link.updateAnswer(new_price)
+
+    # act / assert
+    link.approve(pool, Web3.toWei(50, "ether"), {"from": get_account(index=2)})
+    with reverts("insufficient amount"):
+        pool.liquidationCall.call(
+            account, link, Web3.toWei(0, "ether"), dai, {"from": get_account(index=2)}
+        )
+
+
+def test_liquidation_call_big_amount(
+    add_token_link,
+    supply,
+    add_token,
+    set_pool_configuration_address,
+    set_reserves_manager_address,
+    set_pool_logic_address,
+    pool_logic,
+    pool,
+    account,
+    dai,
+    link,
+    mock_v3_aggregator_link,
+):
+
+    # arrange
+    link.approve(pool, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.supply(link, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.borrow(link, BORROW_AMOUNT, dai, {"from": account})
+
+    new_price = Web3.toWei(20, "ether")
+
+    mock_v3_aggregator_link.updateAnswer(new_price)
+
+    # act / assert
+    link.approve(pool, Web3.toWei(50, "ether"), {"from": get_account(index=2)})
+    with reverts("amount exceeds undercollateralized amount"):
+        pool.liquidationCall.call(
+            account, link, Web3.toWei(100, "ether"), dai, {"from": get_account(index=2)}
+        )
