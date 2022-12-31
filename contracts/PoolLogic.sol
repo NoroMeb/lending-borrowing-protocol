@@ -81,6 +81,11 @@ contract PoolLogic is DSMath {
             poolConfiguration.isAvailable(_collateral),
             "token not available"
         );
+        address priceOracleAddress = poolConfiguration
+            .underlyingAssetToPriceOracle(_collateral);
+        PriceOracle priceOracle = PriceOracle(priceOracleAddress);
+
+        uint256 collateralPrice = priceOracle.getLatestPrice();
 
         uint256 userBalanceInUSD = getUserBalanceInUSD(_account, _collateral);
 
