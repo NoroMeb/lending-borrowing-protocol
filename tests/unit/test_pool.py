@@ -106,6 +106,12 @@ def test_supply_mint_xtoken_to_supplier(supply, account, dai, pool_configuration
     assert x_token_contract.balanceOf(account) == SUPPLY_AMOUNT
 
 
+def test_supply_mint_xtoken_to_supplier(supply, account, dai, pool_configuration, pool):
+
+    # assert
+    assert pool.userToCollateralToAmount(account, dai) == SUPPLY_AMOUNT
+
+
 def test_borrow_transfer_funds_from_xtoken_to_borrower(borrow, pool_configuration, dai):
 
     # arrange
@@ -159,6 +165,14 @@ def test_withdraw_burn_amount_of_xtoken(withdraw, pool_configuration, dai, accou
 
     # assert
     assert x_token_contract.balanceOf(account) == 0
+
+
+def test_withdraw_user_to_callateral_to_amount(
+    withdraw, pool_configuration, dai, account, pool
+):
+
+    # assert
+    assert pool.userToCollateralToAmount(account, dai) == 0
 
 
 def test_repay_invalid_insufficient_amount(borrow, pool, dai, account):

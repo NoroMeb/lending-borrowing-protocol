@@ -14,6 +14,12 @@ contract Pool is Ownable {
     PoolLogic public poolLogic;
     ReservesManager public reservesManager;
 
+    mapping(address => mapping(address => address))
+        public userToBorrowedAssetToCollateral;
+
+    mapping(address => mapping(address => uint256))
+        public userToCollateralToAmount;
+
     function setPoolConfigurationAddress(address _poolConfigurationAddress)
         external
         onlyOwner
@@ -39,6 +45,9 @@ contract Pool is Ownable {
         IERC20(_asset).transferFrom(msg.sender, xtoken, _amount);
         IXToken(xtoken).mint(msg.sender, _amount);
         reservesManager.updateState(_asset, _amount, 0);
+        userToCollateralToAmount[msg.sender][_asset] =
+            userToCollateralToAmount[msg.sender][_asset] +
+            _amount;
     }
 
     function borrow(
@@ -69,6 +78,7 @@ contract Pool is Ownable {
             IDebtToken(debtToken).mint(msg.sender, _amount);
 
             reservesManager.updateState(_asset, _amount, 1);
+            userToBorrowedAssetToCollateral[msg.sender][_asset] = _collateral;
             return _amount;
         }
     }
@@ -87,6 +97,9 @@ contract Pool is Ownable {
             IXToken(xtoken).transferUnderlyingAssetTo(msg.sender, _amount);
             IXToken(xtoken).burn(msg.sender, _amount);
             reservesManager.updateState(_asset, _amount, 2);
+            userToCollateralToAmount[msg.sender][_asset] =
+                userToCollateralToAmount[msg.sender][_asset] +
+                _amount;
 
             return _amount;
         }
