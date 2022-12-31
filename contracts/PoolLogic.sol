@@ -122,4 +122,19 @@ contract PoolLogic is DSMath {
             return true;
         }
     }
+    function getCollateralAmountToMint(
+        address _asset,
+        uint256 _amount,
+        address _collateral
+    ) public view returns (uint256) {
+        address priceOracleAddress = poolConfiguration
+            .underlyingAssetToPriceOracle(_collateral);
+        PriceOracle priceOracle = PriceOracle(priceOracleAddress);
+
+        uint256 collateralPrice = priceOracle.getLatestPrice();
+        uint256 amountOfAssetInUSD = getAmountInUSD(_amount, _asset);
+
+        return amountOfAssetInUSD / collateralPrice;
+    }
+
 }
