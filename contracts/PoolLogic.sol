@@ -73,9 +73,10 @@ contract PoolLogic is DSMath {
 
     function validateBorrow(
         address _account,
-        address _collateral,
-        uint256 _amount
-    ) public view returns (bool) {
+        address _asset,
+        uint256 _amount,
+        address _collateral
+    ) public view returns (bool, uint256) {
         require(_amount > 0, "Amount must be greater than 0");
         require(
             poolConfiguration.isAvailable(_collateral),
@@ -89,14 +90,16 @@ contract PoolLogic is DSMath {
 
         uint256 userBalanceInUSD = getUserBalanceInUSD(_account, _collateral);
 
-        uint256 amountInUSD = getAmountInUSD(_amount, _collateral);
+        uint256 amountInUSD = getAmountInUSD(_amount, _asset);
+
+        uint256 amountOfCollateral = amountInUSD / collateralPrice;
 
         uint256 maxAmountInUSD = (userBalanceInUSD / 10000) * maxAmountRate;
 
         if (amountInUSD <= maxAmountInUSD) {
-            return true;
+            return (true, amountOfCollateral);
         } else {
-            return false;
+            return (false, 0);
         }
     }
 
@@ -122,6 +125,7 @@ contract PoolLogic is DSMath {
             return true;
         }
     }
+
     function getCollateralAmountToMint(
         address _asset,
         uint256 _amount,
