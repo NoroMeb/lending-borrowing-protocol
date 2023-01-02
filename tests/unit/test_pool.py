@@ -106,7 +106,9 @@ def test_supply_mint_xtoken_to_supplier(supply, account, dai, pool_configuration
     assert x_token_contract.balanceOf(account) == SUPPLY_AMOUNT
 
 
-def test_supply_mint_xtoken_to_supplier(supply, account, dai, pool_configuration, pool):
+def test_supply_map_user_to_collateral_to_amount(
+    supply, account, dai, pool_configuration, pool
+):
 
     # assert
     assert pool.userToCollateralToAmount(account, dai) == SUPPLY_AMOUNT
@@ -175,7 +177,7 @@ def test_withdraw_burn_amount_of_xtoken(withdraw, pool_configuration, dai, accou
     assert x_token_contract.balanceOf(account) == 0
 
 
-def test_withdraw_user_to_callateral_to_amount(
+def test_withdraw_decrease_user_to_callateral_to_amount(
     withdraw, pool_configuration, dai, account, pool
 ):
 
