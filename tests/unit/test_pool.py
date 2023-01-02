@@ -155,6 +155,20 @@ def test_borrow_mint_debt_token(borrow, pool_configuration, dai, account):
     assert debt_token_contract.balanceOf(account) != 0
 
 
+def test_borrow_map_user_to_borrowed_asset_to_collateral(
+    borrow, pool_configuration, dai, account, pool, add_token_link, link
+):
+
+    # arrange
+    debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
+    debt_token_contract = Contract.from_abi(
+        "DebtToken", debt_token_address, DebtToken.abi
+    )
+
+    # assert
+    assert pool.userToBorrowedAssetToCollateral(account, dai) == dai
+
+
 def test_withdraw_transfer_funds_from_xtoken_to_withdrawer(
     account_initial_dai_balance, withdraw, pool_configuration, dai, account
 ):
