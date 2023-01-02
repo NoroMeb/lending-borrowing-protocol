@@ -522,8 +522,204 @@ def test_liquidation_call_big_amount(
     mock_v3_aggregator_link.updateAnswer(new_price)
 
     # act / assert
-    link.approve(pool, Web3.toWei(50, "ether"), {"from": get_account(index=2)})
+    link.approve(pool, Web3.toWei(51, "ether"), {"from": get_account(index=2)})
     with reverts("amount exceeds undercollateralized amount"):
         pool.liquidationCall.call(
-            account, link, Web3.toWei(100, "ether"), dai, {"from": get_account(index=2)}
+            account, link, Web3.toWei(51, "ether"), dai, {"from": get_account(index=2)}
         )
+
+
+def test_liquidation_transform_asset_from_liquidator_to_xtoken_contract(
+    add_token_link,
+    supply,
+    add_token,
+    set_pool_configuration_address,
+    set_reserves_manager_address,
+    set_pool_logic_address,
+    pool_logic,
+    pool,
+    pool_configuration,
+    account,
+    dai,
+    link,
+    mock_v3_aggregator_link,
+):
+
+    # arrange
+    link.approve(pool, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.supply(link, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.borrow(link, BORROW_AMOUNT, dai, {"from": account})
+
+    x_token_address = pool_configuration.underlyingAssetToXtoken(link)
+    new_price = Web3.toWei(20, "ether")
+
+    mock_v3_aggregator_link.updateAnswer(new_price)
+
+    liquidation_call_amount = Web3.toWei(50, "ether")
+
+    # act
+    link.approve(pool, liquidation_call_amount, {"from": get_account(index=2)})
+    pool.liquidationCall(
+        account, link, liquidation_call_amount, dai, {"from": get_account(index=2)}
+    )
+
+    # assert
+    assert (
+        link.balanceOf(x_token_address)
+        == SUPPLY_AMOUNT - BORROW_AMOUNT + liquidation_call_amount
+    )
+
+
+def test_liquidation_mint_collateral_xtoken_to_liquidator(
+    add_token_link,
+    supply,
+    add_token,
+    set_pool_configuration_address,
+    set_reserves_manager_address,
+    set_pool_logic_address,
+    pool_logic,
+    pool,
+    pool_configuration,
+    account,
+    dai,
+    link,
+    mock_v3_aggregator_link,
+):
+
+    # arrange
+    link.approve(pool, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.supply(link, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.borrow(link, BORROW_AMOUNT, dai, {"from": account})
+
+    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
+    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
+    new_price = Web3.toWei(20, "ether")
+
+    mock_v3_aggregator_link.updateAnswer(new_price)
+
+    liquidation_call_amount = Web3.toWei(50, "ether")
+
+    # act
+    link.approve(pool, liquidation_call_amount, {"from": get_account(index=2)})
+    pool.liquidationCall(
+        account, link, liquidation_call_amount, dai, {"from": get_account(index=2)}
+    )
+
+    # assert
+    assert x_token_contract.balanceOf(get_account(index=2)) == liquidation_call_amount
+
+
+def test_liquidation_mint_debt_token_to_user(
+    add_token_link,
+    supply,
+    add_token,
+    set_pool_configuration_address,
+    set_reserves_manager_address,
+    set_pool_logic_address,
+    pool_logic,
+    pool,
+    pool_configuration,
+    account,
+    dai,
+    link,
+    mock_v3_aggregator_link,
+):
+
+    # arrange
+    link.approve(pool, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.supply(link, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.borrow(link, BORROW_AMOUNT, dai, {"from": account})
+
+    debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
+    debt_token_contract = Contract.from_abi(
+        "DebtToken", debt_token_address, DebtToken.abi
+    )
+    new_price = Web3.toWei(20, "ether")
+
+    mock_v3_aggregator_link.updateAnswer(new_price)
+
+    liquidation_call_amount = Web3.toWei(50, "ether")
+
+    # act
+    link.approve(pool, liquidation_call_amount, {"from": get_account(index=2)})
+    pool.liquidationCall(
+        account, link, liquidation_call_amount, dai, {"from": get_account(index=2)}
+    )
+
+    # assert
+    assert debt_token_contract.balanceOf(account) == liquidation_call_amount
+
+
+def test_liquidation_call_returns_true(
+    add_token_link,
+    supply,
+    add_token,
+    set_pool_configuration_address,
+    set_reserves_manager_address,
+    set_pool_logic_address,
+    pool_logic,
+    pool,
+    pool_configuration,
+    account,
+    dai,
+    link,
+    mock_v3_aggregator_link,
+):
+
+    # arrange
+    link.approve(pool, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.supply(link, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.borrow(link, BORROW_AMOUNT, dai, {"from": account})
+
+    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
+    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
+    new_price = Web3.toWei(20, "ether")
+
+    mock_v3_aggregator_link.updateAnswer(new_price)
+
+    liquidation_call_amount = Web3.toWei(50, "ether")
+
+    # act
+    link.approve(pool, liquidation_call_amount, {"from": get_account(index=2)})
+    tx = pool.liquidationCall(
+        account, link, liquidation_call_amount, dai, {"from": get_account(index=2)}
+    )
+
+    # assert
+    assert tx.return_value == True
+
+
+def test_liquidation_call_returns_false(
+    add_token_link,
+    supply,
+    add_token,
+    set_pool_configuration_address,
+    set_reserves_manager_address,
+    set_pool_logic_address,
+    pool_logic,
+    pool,
+    pool_configuration,
+    account,
+    dai,
+    link,
+    mock_v3_aggregator_link,
+):
+
+    # arrange
+    link.approve(pool, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.supply(link, SUPPLY_AMOUNT, {"from": get_account(index=2)})
+    pool.borrow(link, BORROW_AMOUNT, dai, {"from": account})
+
+    x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
+    x_token_contract = Contract.from_abi("XToken", x_token_address, XToken.abi)
+
+    liquidation_call_amount = Web3.toWei(50, "ether")
+
+    # act
+    link.approve(pool, liquidation_call_amount, {"from": get_account(index=2)})
+    tx = pool.liquidationCall(
+        account, link, liquidation_call_amount, dai, {"from": get_account(index=2)}
+    )
+
+    # assert
+    assert tx.return_value == False
