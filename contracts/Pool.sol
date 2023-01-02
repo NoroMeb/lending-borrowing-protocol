@@ -174,11 +174,11 @@ contract Pool is Ownable {
             address collateral_xtoken = poolConfiguration
                 .underlyingAssetToXtoken(_collateral);
             address debtToken = poolConfiguration.underlyingAssetToDebtToken(
-                _asset
+                _collateral
             );
             IERC20(_asset).transferFrom(msg.sender, asset_xtoken, _amount);
             IXToken(collateral_xtoken).mint(msg.sender, _amount);
-            IDebtToken(debtToken).burn(_user, _amount);
+            IDebtToken(debtToken).mint(_user, _amount);
 
             return true;
         }
