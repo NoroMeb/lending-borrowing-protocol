@@ -9,6 +9,16 @@ import "../interfaces/IXToken.sol";
 import "../interfaces/IDebtToken.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+/**
+ * @author  . MEBARKIA Abdenour
+ * @title   . Pool Contract
+ * @dev     . Main point of interaction with the protocol, users can :
+ *               . supply
+ *               . borrow
+ *               . withdraw
+ *               . repay
+ */
+
 contract Pool is Ownable {
     PoolConfiguration public poolConfiguration;
     PoolLogic public poolLogic;
@@ -38,6 +48,12 @@ contract Pool is Ownable {
         reservesManager = ReservesManager(_reservesManagerAddress);
     }
 
+    /**
+     * @notice  . Deposits an `amount` of underlying asset into the reserve, receiving in return overlying xTokens.
+     * - E.g. User deposits 100 USDC and gets in return 100 xUSDC
+     * @param   _asset  . The address of the underlying asset to deposit .
+     * @param   _amount  . The amount to be deposited .
+     */
     function supply(address _asset, uint256 _amount) public {
         require(_amount > 0, "insufficient amount");
         require(poolConfiguration.isAvailable(_asset), "token not available");
@@ -50,6 +66,14 @@ contract Pool is Ownable {
             _amount;
     }
 
+    /**
+     * @notice  . Allows users to borrow a specific `amount` of the reserve underlying asset, provided that the borrower
+     * already deposited enough collateral receiving in return debt Tokens .
+     * @param   _asset  . The address of the underlying asset to borrow
+     * @param   _amount  . The amount to be borrowed
+     * @param   _collateral  . The address of the underlying asset to set as collateral (user should have already supplied enough amount of collateral )
+     * @return  uint256  . the amount borrowed if the borrow function successfully executed otherwise it returns 0
+     */
     function borrow(
         address _asset,
         uint256 _amount,
@@ -84,6 +108,13 @@ contract Pool is Ownable {
         }
     }
 
+    /**
+     * @notice  . Withdraws an `amount` of underlying asset from the reserve, burning the equivalent xTokens owned
+     * E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 xUSDC
+     * @param   _asset  . The address of the underlying asset to withdraw
+     * @param   _amount  . The underlying amount to be withdrawn
+     * @return  uint256  . the amount withdrawn if the withdraw function successfully executed otherwise it returns 0
+     */
     function withdraw(address _asset, uint256 _amount)
         public
         returns (uint256)
@@ -106,6 +137,11 @@ contract Pool is Ownable {
         }
     }
 
+    /**
+     * @notice  . Repays a borrowed `amount` , burning the equivalent debt tokens owned
+     * @param   _asset  . The address of the borrowed underlying asset previously borrowed
+     * @param   _amount  . The amount to repay
+     */
     function repay(address _asset, uint256 _amount) public {
         require(_amount > 0, "insufficient amount");
         require(poolConfiguration.isAvailable(_asset), "token not available");
@@ -141,6 +177,15 @@ contract Pool is Ownable {
         reservesManager.updateState(_asset, _amount, 3);
     }
 
+    /**
+     * @notice  .
+     * @dev     .
+     * @param   _user  . The address of the borrower getting liquidated
+     * @param   _asset  . The address of the underlying borrowed asset to be repaid with the liquidation
+     * @param   _amount  . The debt amount of borrowed `asset` the liquidator wants to cover
+     * @param   _collateral  . The address of the underlying asset used as collateral, to receive as result of the liquidation
+     * @return  bool  . succes boolian .
+     */
     function liquidationCall(
         address _user,
         address _asset,
