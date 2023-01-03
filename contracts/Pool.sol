@@ -178,8 +178,7 @@ contract Pool is Ownable {
     }
 
     /**
-     * @notice  .
-     * @dev     .
+     * @notice  . Function to liquidate a non-healthy position collateral-wise
      * @param   _user  . The address of the borrower getting liquidated
      * @param   _asset  . The address of the underlying borrowed asset to be repaid with the liquidation
      * @param   _amount  . The debt amount of borrowed `asset` the liquidator wants to cover
