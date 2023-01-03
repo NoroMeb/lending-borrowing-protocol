@@ -10,6 +10,12 @@ import "./ReservesManager.sol";
 
 import {DataTypes} from "./libraries/DataTypes.sol";
 
+/**
+ * @author  . MEBARKIA Abdenour
+ * @title   . PoolConfiguration
+ * @dev     . To add new token and all the related configuration
+ */
+
 contract PoolConfiguration is Ownable {
     address public poolAddress;
     ReservesManager public reservesManager;
@@ -36,6 +42,19 @@ contract PoolConfiguration is Ownable {
         reservesManager = ReservesManager(_reserveManagerAddress);
     }
 
+    /**
+     * @dev     . Add new token to the protocol utilisation panel
+     * @param   _name  . the name of the underlying asset to be added
+     * @param   _symbol  .  the symbol of the underlying asset to be added
+     * @param   _underlyingAsset  .  the address of the underlying asset to be added
+     * @param   _priceFeedAddress  . the address of the underlying asset's price feed contract
+     * @param   _decimals  .  the name of the underlying asset to be added
+     * @param   _baseVariableBorrowRate  . base variable borrow rate to calculate the interests/debts
+     * @param   _interestRateSlope  . interest rate slope to calculate the interests/debts
+     * @return  address  . the xToken address of the underlying asset
+     * @return  address  . the dentToken address of the underlying asset
+     * @return  address  . the priceOracle address
+     */
     function addToken(
         string memory _name,
         string memory _symbol,
