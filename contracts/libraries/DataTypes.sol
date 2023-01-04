@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.12;
 
+/**
+ * @author  . MEBARKIA Abdenour
+ * @title   . DataTypes
+ * @dev     . Library containing a Reserve struct wich defines reserve properties .
+ */
+
 library DataTypes {
     struct Reserve {
         uint256 totalDeposited;
