@@ -7,6 +7,12 @@ import "./../ReservesManager.sol";
 
 import "@ds-math/src/math.sol";
 
+/**
+ * @author  . MEBARKIA Abdenour
+ * @title   . DebtToken
+ * @dev     . Implements a debt token to track the borrowing positions of users
+ */
+
 contract DebtToken is ERC20, DSMath {
     address public poolAddress;
     address public underlyingAsset;
@@ -30,13 +36,30 @@ contract DebtToken is ERC20, DSMath {
         reservesManager = ReservesManager(_reservesManagerAddress);
     }
 
+    /**
+     * @dev     . Mints debt token to the borrower address
+     * -  Only callable by the Pool
+     * @param   _account  . borrower address
+     * @param   _amount  . amount to mint
+     */
     function mint(address _account, uint256 _amount) external onlyPool {
         super._mint(_account, _amount);
     }
 
+    /**
+     * @dev     . Burns user variable debt
+     * - Only callable by the Pool
+     * @param   _account  . The user whose debt is getting burned
+     * @param   _amount  . The amount getting burned
+     */
     function burn(address _account, uint256 _amount) external onlyPool {
         super._burn(_account, _amount);
     }
+
+    /**
+     * @dev Being non transferrable, the debt token does not implement any of the
+     * standard ERC20 functions for transfer and allowance.
+     */
 
     function transfer(address recipient, uint256 amount)
         public
@@ -105,6 +128,10 @@ contract DebtToken is ERC20, DSMath {
         revert("ALLOWANCE_NOT_SUPPORTED");
     }
 
+    /**
+     * @dev     . Calculates the debt balance of the user
+     * @return  uint256  . The debt balance of the user
+     */
     function balanceOf(address user)
         public
         view
