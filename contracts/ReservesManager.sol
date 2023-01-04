@@ -9,6 +9,12 @@ import "@ds-math/src/math.sol";
 
 import {DataTypes} from "./libraries/DataTypes.sol";
 
+/**
+ * @author  . MEBARKIA Abdenour
+ * @title   . ReservesManager
+ * @dev     . Manage reserves and calculates debt & interests indexes
+ */
+
 contract ReservesManager is DSMath {
     address public poolConfigurationAddress;
     address public poolAddress;
@@ -43,6 +49,12 @@ contract ReservesManager is DSMath {
         return underlyingAssetToReserve[_underlyingAsset];
     }
 
+    /**
+     * @dev     . calculates the utilization rate of a reserve based on the total deposited / borrowed on the reserve
+     * @param   _totalDeposited  . total amount deposited in a reserve
+     * @param   _totalBorrowed  . total amount borrowed in a reserve
+     * @return  uint256  . the utilization rate value
+     */
     function updateUtilizationRate(
         uint256 _totalDeposited,
         uint256 _totalBorrowed
@@ -58,6 +70,14 @@ contract ReservesManager is DSMath {
         return utilizationRate;
     }
 
+    /**
+     * @dev     . calculates the variable borrow rate of a reserve based on utilization rate, base variable borrow rate
+     * & intereste rate slope of a reserve
+     * @param   _utilizationRate  .  utilization rate of a reserve
+     * @param   _baseVariableBorrowRate  . base variable borrow rate of a reserve
+     * @param   _interestRateSlope  . intereste rate slope of a reserve
+     * @return  uint256  . the variable borrow value
+     */
     function updateVariableBorrowRate(
         uint256 _utilizationRate,
         uint256 _baseVariableBorrowRate,
@@ -71,6 +91,13 @@ contract ReservesManager is DSMath {
         return variableBorrowRate;
     }
 
+    /**
+     * @dev     . calculates the index of debt or interest of all users
+     * @param   _latestIndex  . latest index
+     * @param   _rate  . variable borrow rate / liquidity rate , dependes of the index we want to calculate
+     * @param   _secondsSinceLastupdate  . number of seconds since latest update of a reserve
+     * @return  uint256  . the index value
+     */
     function updateIndex(
         uint256 _latestIndex,
         uint256 _rate,
@@ -86,12 +113,18 @@ contract ReservesManager is DSMath {
         return index;
     }
 
-    // operation : value
-    // supply : 0
-    // borrow : 1
-    // withdraw : 2
-    // repay : 3
-
+    /**
+     * @dev     . update all the variable properties of a reserve, this function is called
+     * whenever a user call this functions : supply, borrow, withdraw, repay
+     * @param   _underlyingAsset  . The address of the underlying asset of the reserve
+     * @param   _amount  . the amount user passed on one of the function quoted above
+     * @param   _operation  . an integer that represents which function the user called
+     *                           operation : value
+     *                           supply : 0
+     *                           borrow : 1
+     *                           withdraw : 2
+     *                           repay : 3
+     */
     function updateState(
         address _underlyingAsset,
         uint256 _amount,
@@ -150,6 +183,11 @@ contract ReservesManager is DSMath {
         underlyingAssetToReserve[_underlyingAsset] = reserve;
     }
 
+    /**
+     * @dev     . returns the variable borrow index needed to calculate the balance of user debtToken
+     * @param   _underlyingAsset  . the adress of the underlying asset of the debtToken
+     * @return  uint256  . variable borrow index
+     */
     function getVariableBorrowIndexSinceLastUpdate(address _underlyingAsset)
         public
         view
@@ -170,6 +208,11 @@ contract ReservesManager is DSMath {
         return variableBorrowIndex;
     }
 
+    /**
+     * @dev     . returns the supply index needed to calculate the balance of user xToken
+     * @param   _underlyingAsset  . the adress of the underlying asset of the xToken
+     * @return  uint256  . supply index
+     */
     function getSupplyIndexSinceLastUpdate(address _underlyingAsset)
         public
         view
@@ -190,6 +233,14 @@ contract ReservesManager is DSMath {
         return supplyIndex;
     }
 
+    /**
+     * @dev     . init a new reserve when adding new available token, this can only be called by PoolConfiguration
+     * @param   _underlyingAsset  . the address of the underlying asset of the new reserve
+     * @param   _baseVariableBorrowRate  . base variable borrow rate of the new reserve
+     * @param   _interestRateSlope  . interest rate slope of the new reserve
+     * @param   _xToken  . address of xToken of the new reserve
+     * @param   _debtToken  . address of debtToken of the new reserve
+     */
     function initReserve(
         address _underlyingAsset,
         uint256 _baseVariableBorrowRate,
@@ -215,6 +266,8 @@ contract ReservesManager is DSMath {
         );
         underlyingAssetToReserve[_underlyingAsset] = reserve;
     }
+
+    // Reseve getters
 
     function getTotalDeposited(address _underlyingAsset)
         public
