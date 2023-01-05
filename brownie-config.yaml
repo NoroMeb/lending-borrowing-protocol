@@ -14,7 +14,6 @@ networks:
   development:
     verify: false
   goerli:
-    priority_fee: 100 gwei
     verify: true
 
 wallets:
