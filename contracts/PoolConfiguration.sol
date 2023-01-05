@@ -27,7 +27,6 @@ contract PoolConfiguration is Ownable {
     mapping(address => address) public underlyingAssetToDebtToken;
     mapping(address => bool) public isAvailable;
     mapping(address => address) public underlyingAssetToPriceOracle;
-    mapping(address => DataTypes.Reserve) public underlyingAssetToReserve;
 
     address[] public tokens;
 
