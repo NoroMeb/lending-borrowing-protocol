@@ -15,6 +15,9 @@ networks:
     verify: false
   goerli:
     verify: true
+    link_token: "0x326C977E6efc84E512bB9C30f76E30c160eD06FB"
+    dai_usd_price_feed: "0x0d79df66BE487753B02D015Fb622DED7f0E9798d"
+    link_usd_price_feed: "0x48731cF7e84dc94C5f84577882c14Be11a5B7456"
 
 wallets:
   from_key: ${PRIVATE_KEY}
