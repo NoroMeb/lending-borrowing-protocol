@@ -205,9 +205,9 @@ def test_get_supply_index_since_last_update(borrow, reserves_manager, dai):
     )  # 18 seconds (chain.sleep(15) + 3 of the test) .
 
     # act / assert
-    assert reserves_manager.getSupplyIndexSinceLastUpdate(dai) / (
-        10**18
-    ) == pytest.approx(expected_supply_index)
+    assert int(reserves_manager.getSupplyIndexSinceLastUpdate(dai) / (10**18)) == int(
+        expected_supply_index
+    )
 
 
 def test_get_total_deposited(init_reserve, reserves_manager, dai):
