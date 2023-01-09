@@ -64,6 +64,7 @@ contract PoolConfiguration is Ownable {
         uint256 _interestRateSlope
     )
         external
+        virtual
         onlyOwner
         returns (
             address,
