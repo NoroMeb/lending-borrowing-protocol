@@ -20,5 +20,5 @@ networks:
     link_usd_price_feed: "0x48731cF7e84dc94C5f84577882c14Be11a5B7456"
 
 wallets:
-  from_key: ${PRIVATE_KEY}
+  from_key: ${PRIVATE_KEY} # add private key to .env file
   from_key_2: ${PRIVATE_KEY_2}
