@@ -9,7 +9,7 @@ from brownie import (
     LinkTokenMock,
     MockV3Aggregator,
     PoolLogicMock,
-    PriceOracle,
+    PriceOracleMock,
     ReservesManagerMock,
     chain,
 )
@@ -213,7 +213,9 @@ def supply(
 @pytest.fixture()
 def price_oracle(account, mock_v3_aggregator):
     decimals = 18
-    price_oracle = PriceOracle.deploy(mock_v3_aggregator, decimals, {"from": account})
+    price_oracle = PriceOracleMock.deploy(
+        mock_v3_aggregator, decimals, {"from": account}
+    )
 
     return price_oracle
 

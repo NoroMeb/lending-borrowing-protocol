@@ -1,4 +1,4 @@
-from brownie import Contract, XToken, PriceOracle, reverts, DebtToken, chain
+from brownie import Contract, XToken, PriceOracleMock, reverts, DebtToken, chain
 from scripts.utils import get_account
 from conftest import BASE_VARIABLE_BORROW_RATE, INTEREST_RATE_SLOPE
 from web3 import Web3
@@ -113,7 +113,7 @@ def test_add_token_creates_new_price_oracle_instance(
 
     # arrange
     price_oracle_contract = Contract.from_abi(
-        "PriceOracle", add_token[2], PriceOracle.abi
+        "PriceOracleMock", add_token[2], PriceOracleMock.abi
     )
 
     # assert
