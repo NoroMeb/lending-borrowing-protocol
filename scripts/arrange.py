@@ -18,6 +18,7 @@ from scripts.deploy_pool_configuration import (
 )
 from scripts.deploy_pool_logic import deploy_pool_logic
 from scripts.deploy_reserves_manager import deploy_reserves_manager
+from scripts.deploy_mock_dai import deploy_mock_dai
 
 
 def main():
@@ -30,6 +31,7 @@ def main():
     pool_configuration = deploy_pool_configuration()
     pool_logic = deploy_pool_logic()
     reserves_manager = deploy_reserves_manager()
+    mock_dai = deploy_mock_dai()
 
     # set addresses
     pool.setPoolConfigurationAddress(
