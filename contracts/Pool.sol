@@ -87,20 +87,18 @@ contract Pool is Ownable {
             _collateral
         );
 
-        bool isValid = false; 
-
-        // (bool isValid, uint256 amountOfCollateral) = poolLogic.validateBorrow(
-        //     msg.sender,
-        //     _asset,
-        //     _amount,
-        //     _collateral
-        // );
+        (bool isValid, uint256 amountOfCollateral) = poolLogic.validateBorrow(
+            msg.sender,
+            _asset,
+            _amount,
+            _collateral
+        );
 
         if (!isValid) {
             return 0;
         } else {
             IXToken(xtoken).transferUnderlyingAssetTo(msg.sender, _amount);
-            // IXToken(collateralXToken).burn(msg.sender, amountOfCollateral);
+            IXToken(collateralXToken).burn(msg.sender, amountOfCollateral);
 
             IDebtToken(debtToken).mint(msg.sender, _amount);
 
