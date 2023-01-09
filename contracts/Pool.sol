@@ -17,6 +17,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  *               . borrow
  *               . withdraw
  *               . repay
+ *               . liquidate undercollateralized user
  */
 
 contract Pool is Ownable {
