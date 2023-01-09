@@ -100,7 +100,7 @@ contract PoolConfiguration is Ownable {
         underlyingAssetToDebtToken[_underlyingAsset] = address(debtToken);
         isAvailable[_underlyingAsset] = true;
 
-        priceOracle = new PriceOracle(_priceFeedAddress, _decimals);
+        priceOracle = new PriceOracle(_priceFeedAddress);
 
         underlyingAssetToPriceOracle[_underlyingAsset] = address(priceOracle);
         tokens.push(_underlyingAsset);
