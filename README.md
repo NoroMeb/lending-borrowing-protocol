@@ -44,3 +44,7 @@ and then experiment with scripts in the `script` folder .
 - [Compound documentation](https://docs.compound.finance/v2/)
 - [Twitter thread](https://twitter.com/kinaumov/status/1535055544368906241)
 - [Medium article](https://medium.com/coinmonks/how-to-code-a-lending-protocol-a9b5b021696d)
+
+---
+
+_for educational purposes. Not intended for real financial use._
