@@ -11,6 +11,9 @@ account = get_account()
 
 
 def main():
+    deploy_reserves_manager()
+
+def deploy_reserves_manager():
     pool_configuration = PoolConfiguration[-1]
     pool = Pool[-1]
     reserves_manager = ReservesManager.deploy(

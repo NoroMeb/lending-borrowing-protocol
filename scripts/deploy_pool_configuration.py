@@ -9,7 +9,7 @@ def main():
     add_link_token()
 
 
-def deploy():
+def deploy_pool_configuration():
     pool = Pool[-1]
     pool_configuration = PoolConfiguration.deploy(
         pool,
