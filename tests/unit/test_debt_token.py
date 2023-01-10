@@ -4,7 +4,9 @@ from scripts.utils import get_account
 from conftest import BORROW_AMOUNT
 
 
-def test_debt_token_constructor(account, dai, pool, reserves_manager):
+def test_debt_token_constructor(
+    account, dai, pool, reserves_manager, skip_live_testing
+):
 
     # arrange
     name = "debtTEST"
@@ -23,7 +25,9 @@ def test_debt_token_constructor(account, dai, pool, reserves_manager):
     assert debt_token.reservesManager() == reserves_manager
 
 
-def test_mint_debt_token(add_token, account, pool, pool_configuration, dai):
+def test_mint_debt_token(
+    add_token, account, pool, pool_configuration, dai, skip_live_testing
+):
 
     # arrange
     debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
@@ -40,7 +44,7 @@ def test_mint_debt_token(add_token, account, pool, pool_configuration, dai):
 
 
 def test_only_pool_can_mint_debt_token(
-    add_token, account, pool, pool_configuration, dai
+    add_token, account, pool, pool_configuration, dai, skip_live_testing
 ):
 
     # arrange
@@ -55,7 +59,9 @@ def test_only_pool_can_mint_debt_token(
         debt_token_contract.mint(account, amount, {"from": account})
 
 
-def test_burn_debt_token(add_token, account, pool, pool_configuration, dai):
+def test_burn_debt_token(
+    add_token, account, pool, pool_configuration, dai, skip_live_testing
+):
 
     # arrange
     debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
@@ -73,7 +79,7 @@ def test_burn_debt_token(add_token, account, pool, pool_configuration, dai):
 
 
 def test_only_pool_can_burn_debt_token(
-    add_token, account, pool, pool_configuration, dai
+    add_token, account, pool, pool_configuration, dai, skip_live_testing
 ):
 
     # arrange
@@ -89,7 +95,9 @@ def test_only_pool_can_burn_debt_token(
         debt_token_contract.burn(account, amount, {"from": account})
 
 
-def test_transfer_debt_token_reverts(add_token, account, pool, pool_configuration, dai):
+def test_transfer_debt_token_reverts(
+    add_token, account, pool, pool_configuration, dai, skip_live_testing
+):
 
     # arrange
     recepient = get_account(index=2)
@@ -106,7 +114,7 @@ def test_transfer_debt_token_reverts(add_token, account, pool, pool_configuratio
 
 
 def test_allowance_debt_token_reverts(
-    add_token, account, pool, pool_configuration, dai
+    add_token, account, pool, pool_configuration, dai, skip_live_testing
 ):
 
     # arrange
@@ -123,7 +131,9 @@ def test_allowance_debt_token_reverts(
         debt_token_contract.allowance(account, spender, {"from": account})
 
 
-def test_approve_debt_token_reverts(add_token, account, pool, pool_configuration, dai):
+def test_approve_debt_token_reverts(
+    add_token, account, pool, pool_configuration, dai, skip_live_testing
+):
 
     # arrange
     spender = get_account(index=2)
@@ -140,7 +150,7 @@ def test_approve_debt_token_reverts(add_token, account, pool, pool_configuration
 
 
 def test_transfer_from_debt_token_reverts(
-    add_token, account, pool, pool_configuration, dai
+    add_token, account, pool, pool_configuration, dai, skip_live_testing
 ):
 
     # arrange
@@ -158,7 +168,7 @@ def test_transfer_from_debt_token_reverts(
 
 
 def test_increase_allowance_debt_token_reverts(
-    add_token, account, pool, pool_configuration, dai
+    add_token, account, pool, pool_configuration, dai, skip_live_testing
 ):
 
     # arrange
@@ -176,7 +186,7 @@ def test_increase_allowance_debt_token_reverts(
 
 
 def test_decrease_allowance_debt_token_reverts(
-    add_token, account, pool, pool_configuration, dai
+    add_token, account, pool, pool_configuration, dai, skip_live_testing
 ):
 
     # arrange
@@ -194,7 +204,13 @@ def test_decrease_allowance_debt_token_reverts(
 
 
 def test_debt_token_balance_of(
-    add_token, borrow, pool_configuration, dai, account, reserves_manager
+    add_token,
+    borrow,
+    pool_configuration,
+    dai,
+    account,
+    reserves_manager,
+    skip_live_testing,
 ):
 
     # arrange

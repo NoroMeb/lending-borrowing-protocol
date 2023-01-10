@@ -3,7 +3,7 @@ from web3 import Web3
 from conftest import SUPPLY_AMOUNT, BORROW_AMOUNT
 
 
-def test_xtoken_constructor(account, dai, pool, reserves_manager):
+def test_xtoken_constructor(account, dai, pool, reserves_manager, skip_live_testing):
 
     # arrange
     name = "TEST"
@@ -29,7 +29,9 @@ def test_xtoken_constructor(account, dai, pool, reserves_manager):
     assert x_token.reservesManager() == reserves_manager
 
 
-def test_mint_xtoken(add_token, account, pool, pool_configuration, dai):
+def test_mint_xtoken(
+    add_token, account, pool, pool_configuration, dai, skip_live_testing
+):
 
     # arrange
     x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
@@ -43,7 +45,9 @@ def test_mint_xtoken(add_token, account, pool, pool_configuration, dai):
     assert x_token_contract.balanceOf(account) == amount
 
 
-def test_only_pool_can_mint_xtoken(add_token, account, pool, pool_configuration, dai):
+def test_only_pool_can_mint_xtoken(
+    add_token, account, pool, pool_configuration, dai, skip_live_testing
+):
 
     # arrange
     x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
@@ -55,7 +59,9 @@ def test_only_pool_can_mint_xtoken(add_token, account, pool, pool_configuration,
         x_token_contract.mint(account, amount, {"from": account})
 
 
-def test_burn_xtoken(add_token, account, pool, pool_configuration, dai):
+def test_burn_xtoken(
+    add_token, account, pool, pool_configuration, dai, skip_live_testing
+):
 
     # arrange
     x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
@@ -70,7 +76,9 @@ def test_burn_xtoken(add_token, account, pool, pool_configuration, dai):
     assert x_token_contract.balanceOf(account) == 0
 
 
-def test_only_pool_can_burn_xtoken(add_token, account, pool, pool_configuration, dai):
+def test_only_pool_can_burn_xtoken(
+    add_token, account, pool, pool_configuration, dai, skip_live_testing
+):
 
     # arrange
     x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
@@ -84,7 +92,13 @@ def test_only_pool_can_burn_xtoken(add_token, account, pool, pool_configuration,
 
 
 def test_transfer_underlying_asset(
-    account_initial_dai_balance, supply, pool_configuration, dai, account, pool
+    account_initial_dai_balance,
+    supply,
+    pool_configuration,
+    dai,
+    account,
+    pool,
+    skip_live_testing,
 ):
 
     # arrange
@@ -101,7 +115,7 @@ def test_transfer_underlying_asset(
 
 
 def test_only_pool_can_transfer_underlying_asset(
-    supply, pool_configuration, dai, account, pool
+    supply, pool_configuration, dai, account, pool, skip_live_testing
 ):
 
     # arrange
@@ -115,7 +129,14 @@ def test_only_pool_can_transfer_underlying_asset(
 
 
 def test_xtoken_balance_of(
-    add_token, supply, borrow, pool_configuration, dai, account, reserves_manager
+    add_token,
+    supply,
+    borrow,
+    pool_configuration,
+    dai,
+    account,
+    reserves_manager,
+    skip_live_testing,
 ):
 
     # arrange

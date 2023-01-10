@@ -10,7 +10,9 @@ import time
 import pytest
 
 
-def test_reserves_manager_constructor(account, supply, pool, pool_configuration):
+def test_reserves_manager_constructor(
+    account, supply, pool, pool_configuration, skip_live_testing
+):
 
     # act
     reserves_manager = ReservesManager.deploy(
@@ -24,13 +26,15 @@ def test_reserves_manager_constructor(account, supply, pool, pool_configuration)
     assert reserves_manager.poolAddress() == pool
 
 
-def test_get_reserve(dai, reserves_manager, init_reserve, initial_reserve):
+def test_get_reserve(
+    dai, reserves_manager, init_reserve, initial_reserve, skip_live_testing
+):
 
     # act / assert
     assert reserves_manager.getReserve(dai) == initial_reserve
 
 
-def test_update_utilization_rate(reserves_manager):
+def test_update_utilization_rate(reserves_manager, skip_live_testing):
 
     # arrange
     total_deposited = SUPPLY_AMOUNT
@@ -47,7 +51,7 @@ def test_update_utilization_rate(reserves_manager):
     assert utilization_rate / 10**18 == expexted_utilization_rate
 
 
-def test_update_variable_borrow_rate(reserves_manager):
+def test_update_variable_borrow_rate(reserves_manager, skip_live_testing):
 
     # arrange
     utilization_rate = Web3.toWei(0.75, "ether")
@@ -68,7 +72,13 @@ def test_update_variable_borrow_rate(reserves_manager):
 
 
 def test_update_index(
-    reserves_manager, dai, account, pool_configuration, pool, add_token
+    reserves_manager,
+    dai,
+    account,
+    pool_configuration,
+    pool,
+    add_token,
+    skip_live_testing,
 ):
 
     # arrange
@@ -93,14 +103,16 @@ def test_update_index(
     assert variable_borrow_index / (10**18) == expected_variable_borrow_index
 
 
-def test_init_reserve(init_reserve, initial_reserve, reserves_manager, dai):
+def test_init_reserve(
+    init_reserve, initial_reserve, reserves_manager, dai, skip_live_testing
+):
 
     # assert
     assert reserves_manager.underlyingAssetToReserve(dai) == initial_reserve
 
 
 def test_only_pool_configuration_can_init_reserve(
-    add_token, reserves_manager, dai, account
+    add_token, reserves_manager, dai, account, skip_live_testing
 ):
 
     x_token = add_token[0]
@@ -117,14 +129,18 @@ def test_only_pool_configuration_can_init_reserve(
         )
 
 
-def test_get_reserve(reserves_manager, init_reserve, initial_reserve, dai):
+def test_get_reserve(
+    reserves_manager, init_reserve, initial_reserve, dai, skip_live_testing
+):
 
     # act / assert
     print(len(initial_reserve))
     assert reserves_manager.getReserve(dai) == initial_reserve
 
 
-def test_update_state(add_token, init_reserve, reserves_manager, pool, dai):
+def test_update_state(
+    add_token, init_reserve, reserves_manager, pool, dai, skip_live_testing
+):
 
     # arrange
     amount = SUPPLY_AMOUNT
@@ -176,7 +192,9 @@ def test_update_state(add_token, init_reserve, reserves_manager, pool, dai):
     assert reserves_manager.getReserve(dai) == expected_reserve or expected_reserve_2
 
 
-def test_get_variable_borrow_index_since_last_update(borrow, reserves_manager, dai):
+def test_get_variable_borrow_index_since_last_update(
+    borrow, reserves_manager, dai, skip_live_testing
+):
 
     # arrange
     chain.sleep(10)
@@ -194,7 +212,9 @@ def test_get_variable_borrow_index_since_last_update(borrow, reserves_manager, d
     ) == pytest.approx(expected_variable_borrow_index)
 
 
-def test_get_supply_index_since_last_update(borrow, reserves_manager, dai):
+def test_get_supply_index_since_last_update(
+    borrow, reserves_manager, dai, skip_live_testing
+):
 
     # arrange
     chain.sleep(10)
@@ -210,73 +230,83 @@ def test_get_supply_index_since_last_update(borrow, reserves_manager, dai):
     )
 
 
-def test_get_total_deposited(init_reserve, reserves_manager, dai):
+def test_get_total_deposited(init_reserve, reserves_manager, dai, skip_live_testing):
 
     # act / assertt
     assert reserves_manager.getTotalDeposited(dai) == 0
 
 
-def test_get_total_borrowed(init_reserve, reserves_manager, dai):
+def test_get_total_borrowed(init_reserve, reserves_manager, dai, skip_live_testing):
 
     # act / assert
     assert reserves_manager.getTotalBorrowed(dai) == 0
 
 
-def test_get_utilization_rate(init_reserve, reserves_manager, dai):
+def test_get_utilization_rate(init_reserve, reserves_manager, dai, skip_live_testing):
 
     # act / assert
     assert reserves_manager.getUtilizationRate(dai) == 0
 
 
-def test_get_variable_borrow_rate(init_reserve, reserves_manager, dai):
+def test_get_variable_borrow_rate(
+    init_reserve, reserves_manager, dai, skip_live_testing
+):
 
     # act / assert
     assert reserves_manager.getVariableBorrowRate(dai) == 0
 
 
-def test_get_base_variable_borrow_rate(init_reserve, reserves_manager, dai):
+def test_get_base_variable_borrow_rate(
+    init_reserve, reserves_manager, dai, skip_live_testing
+):
 
     # act / assert
     assert reserves_manager.getBaseVariableBorrowRate(dai) == 0
 
 
-def test_get_interest_rate_slope(init_reserve, reserves_manager, dai):
+def test_get_interest_rate_slope(
+    init_reserve, reserves_manager, dai, skip_live_testing
+):
 
     # act / assert
     assert reserves_manager.getInterestRateSlope(dai) == Web3.toWei(5, "ether")
 
 
-def test_get_variable_borrow_index(init_reserve, reserves_manager, dai):
+def test_get_variable_borrow_index(
+    init_reserve, reserves_manager, dai, skip_live_testing
+):
 
     # act / assert
     assert reserves_manager.getVariableBorrowIndex(dai) == Web3.toWei(1, "ether")
 
 
-def test_get_liquidity_rate(init_reserve, reserves_manager, dai):
+def test_get_liquidity_rate(init_reserve, reserves_manager, dai, skip_live_testing):
 
     # act / assert
     assert reserves_manager.getLiquidityRate(dai) == 0
 
 
-def test_get_supply_index(init_reserve, reserves_manager, dai):
+def test_get_supply_index(init_reserve, reserves_manager, dai, skip_live_testing):
 
     # act / assert
     assert reserves_manager.getSupplyIndex(dai) == Web3.toWei(1, "ether")
 
 
-def test_get_last_update_time(init_reserve, reserves_manager, dai):
+def test_get_last_update_time(init_reserve, reserves_manager, dai, skip_live_testing):
 
     # act / assert
     assert reserves_manager.getLastUpdateTime(dai) == chain[-1].timestamp
 
 
-def test_get_x_token(add_token, init_reserve, reserves_manager, dai):
+def test_get_x_token(add_token, init_reserve, reserves_manager, dai, skip_live_testing):
 
     # act / assert
     assert reserves_manager.getXToken(dai) == add_token[0]
 
 
-def test_get_debt_token(add_token, init_reserve, reserves_manager, dai):
+def test_get_debt_token(
+    add_token, init_reserve, reserves_manager, dai, skip_live_testing
+):
 
     # act / assert
     assert reserves_manager.getDebtToken(dai) == add_token[1]

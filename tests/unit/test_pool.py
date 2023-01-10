@@ -11,14 +11,16 @@ from conftest import (
 
 
 def test_set_pool_configuration_address(
-    set_pool_configuration_address, pool, pool_configuration
+    set_pool_configuration_address, pool, pool_configuration, skip_live_testing
 ):
 
     # assert
     assert pool.poolConfiguration() == pool_configuration
 
 
-def test_only_owner_can_set_pool_configuration_address(pool, pool_configuration):
+def test_only_owner_can_set_pool_configuration_address(
+    pool, pool_configuration, skip_live_testing
+):
 
     # arrange
     non_owner = get_account(index=2)
@@ -28,13 +30,15 @@ def test_only_owner_can_set_pool_configuration_address(pool, pool_configuration)
         pool.setPoolConfigurationAddress(pool_configuration, {"from": non_owner})
 
 
-def test_set_pool_logic_address(set_pool_logic_address, pool, pool_logic):
+def test_set_pool_logic_address(
+    set_pool_logic_address, pool, pool_logic, skip_live_testing
+):
 
     # assert
     assert pool.poolLogic() == pool_logic
 
 
-def test_only_owner_can_set_pool_logic_address(pool, pool_logic):
+def test_only_owner_can_set_pool_logic_address(pool, pool_logic, skip_live_testing):
 
     # arrange
     non_owner = get_account(index=2)
@@ -45,14 +49,16 @@ def test_only_owner_can_set_pool_logic_address(pool, pool_logic):
 
 
 def test_set_reserves_manager_address(
-    set_reserves_manager_address, pool, reserves_manager
+    set_reserves_manager_address, pool, reserves_manager, skip_live_testing
 ):
 
     # assert
     assert pool.reservesManager() == reserves_manager
 
 
-def test_only_owner_can_set_reserves_manager_address(pool, reserves_manager):
+def test_only_owner_can_set_reserves_manager_address(
+    pool, reserves_manager, skip_live_testing
+):
 
     # arrange
     non_owner = get_account(index=2)
@@ -63,7 +69,7 @@ def test_only_owner_can_set_reserves_manager_address(pool, reserves_manager):
 
 
 def test_supply_null_amount(
-    set_pool_configuration_address, add_token, account, pool, dai
+    set_pool_configuration_address, add_token, account, pool, dai, skip_live_testing
 ):
 
     # act / assert
@@ -72,7 +78,7 @@ def test_supply_null_amount(
 
 
 def test_supply_non_available_token(
-    set_pool_configuration_address, add_token, account, pool, link
+    set_pool_configuration_address, add_token, account, pool, link, skip_live_testing
 ):
 
     # arrange
@@ -85,7 +91,12 @@ def test_supply_non_available_token(
 
 
 def test_supply_transfer_funds_from_supplier_account_to_xtoken(
-    account_initial_dai_balance, account, supply, dai, pool_configuration
+    account_initial_dai_balance,
+    account,
+    supply,
+    dai,
+    pool_configuration,
+    skip_live_testing,
 ):
 
     # arrange
@@ -96,7 +107,9 @@ def test_supply_transfer_funds_from_supplier_account_to_xtoken(
     assert dai.balanceOf(account) == account_initial_dai_balance - SUPPLY_AMOUNT
 
 
-def test_supply_mint_xtoken_to_supplier(supply, account, dai, pool_configuration):
+def test_supply_mint_xtoken_to_supplier(
+    supply, account, dai, pool_configuration, skip_live_testing
+):
 
     # arrange
     x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
@@ -107,14 +120,16 @@ def test_supply_mint_xtoken_to_supplier(supply, account, dai, pool_configuration
 
 
 def test_supply_map_user_to_collateral_to_amount(
-    supply, account, dai, pool_configuration, pool
+    supply, account, dai, pool_configuration, pool, skip_live_testing
 ):
 
     # assert
     assert pool.userToCollateralToAmount(account, dai) == SUPPLY_AMOUNT
 
 
-def test_borrow_transfer_funds_from_xtoken_to_borrower(borrow, pool_configuration, dai):
+def test_borrow_transfer_funds_from_xtoken_to_borrower(
+    borrow, pool_configuration, dai, skip_live_testing
+):
 
     # arrange
     x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
@@ -124,7 +139,9 @@ def test_borrow_transfer_funds_from_xtoken_to_borrower(borrow, pool_configuratio
     assert dai.balanceOf(x_token_address) == SUPPLY_AMOUNT - BORROW_AMOUNT
 
 
-def test_borrow_burn_amount_of_xtoken(borrow, pool_configuration, dai, account):
+def test_borrow_burn_amount_of_xtoken(
+    borrow, pool_configuration, dai, account, skip_live_testing
+):
 
     # arrange
     x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
@@ -137,13 +154,17 @@ def test_borrow_burn_amount_of_xtoken(borrow, pool_configuration, dai, account):
     ) / (10**18)
 
 
-def test_borrow_map_user_asset_borrowed_to_collateral(borrow, pool, account, dai):
+def test_borrow_map_user_asset_borrowed_to_collateral(
+    borrow, pool, account, dai, skip_live_testing
+):
 
     # assert
     assert pool.userToBorrowedAssetToCollateral(account, dai) == dai
 
 
-def test_borrow_mint_debt_token(borrow, pool_configuration, dai, account):
+def test_borrow_mint_debt_token(
+    borrow, pool_configuration, dai, account, skip_live_testing
+):
 
     # arrange
     debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
@@ -156,7 +177,14 @@ def test_borrow_mint_debt_token(borrow, pool_configuration, dai, account):
 
 
 def test_borrow_map_user_to_borrowed_asset_to_collateral(
-    borrow, pool_configuration, dai, account, pool, add_token_link, link
+    borrow,
+    pool_configuration,
+    dai,
+    account,
+    pool,
+    add_token_link,
+    link,
+    skip_live_testing,
 ):
 
     # arrange
@@ -170,7 +198,12 @@ def test_borrow_map_user_to_borrowed_asset_to_collateral(
 
 
 def test_withdraw_transfer_funds_from_xtoken_to_withdrawer(
-    account_initial_dai_balance, withdraw, pool_configuration, dai, account
+    account_initial_dai_balance,
+    withdraw,
+    pool_configuration,
+    dai,
+    account,
+    skip_live_testing,
 ):
 
     # arrange
@@ -181,7 +214,9 @@ def test_withdraw_transfer_funds_from_xtoken_to_withdrawer(
     assert dai.balanceOf(account) == account_initial_dai_balance
 
 
-def test_withdraw_burn_amount_of_xtoken(withdraw, pool_configuration, dai, account):
+def test_withdraw_burn_amount_of_xtoken(
+    withdraw, pool_configuration, dai, account, skip_live_testing
+):
 
     # arrange
     x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
@@ -192,21 +227,23 @@ def test_withdraw_burn_amount_of_xtoken(withdraw, pool_configuration, dai, accou
 
 
 def test_withdraw_decrease_user_to_callateral_to_amount(
-    withdraw, pool_configuration, dai, account, pool
+    withdraw, pool_configuration, dai, account, pool, skip_live_testing
 ):
 
     # assert
     assert pool.userToCollateralToAmount(account, dai) == 0
 
 
-def test_repay_invalid_insufficient_amount(borrow, pool, dai, account):
+def test_repay_invalid_insufficient_amount(
+    borrow, pool, dai, account, skip_live_testing
+):
 
     # act / assert
     with reverts("insufficient amount"):
         pool.repay(dai, 0, {"from": account})
 
 
-def test_repay_non_available_token(borrow, account, pool, link):
+def test_repay_non_available_token(borrow, account, pool, link, skip_live_testing):
 
     # arrange
     link.approve(pool, BORROW_AMOUNT, {"from": account})
@@ -216,14 +253,14 @@ def test_repay_non_available_token(borrow, account, pool, link):
         pool.repay(link, BORROW_AMOUNT, {"from": account})
 
 
-def test_repay_with_no_debt(supply, account, pool, dai):
+def test_repay_with_no_debt(supply, account, pool, dai, skip_live_testing):
 
     # act / assert
     with reverts("doesnt have a debt to pay"):
         pool.repay(dai, BORROW_AMOUNT, {"from": account})
 
 
-def test_repay_amount_exceeds_debt(borrow, account, pool, dai):
+def test_repay_amount_exceeds_debt(borrow, account, pool, dai, skip_live_testing):
 
     # arrange
     amount = Web3.toWei(85, "ether")
@@ -235,7 +272,7 @@ def test_repay_amount_exceeds_debt(borrow, account, pool, dai):
 
 
 def test_repay_transfer_funds_from_user_account_to_xtoken(
-    repay, account, pool, pool_configuration, dai
+    repay, account, pool, pool_configuration, dai, skip_live_testing
 ):
 
     # arrange
@@ -245,7 +282,9 @@ def test_repay_transfer_funds_from_user_account_to_xtoken(
     assert dai.balanceOf(x_token_address) == SUPPLY_AMOUNT
 
 
-def test_repay_mint_xtoken_to_user(repay, account, pool, pool_configuration, dai):
+def test_repay_mint_xtoken_to_user(
+    repay, account, pool, pool_configuration, dai, skip_live_testing
+):
 
     # arrange
     x_token_address = pool_configuration.underlyingAssetToXtoken(dai)
@@ -255,7 +294,9 @@ def test_repay_mint_xtoken_to_user(repay, account, pool, pool_configuration, dai
     assert x_token_contract.balanceOf(account) != 0
 
 
-def test_repay_burn_debt_token(repay, account, pool_configuration, dai):
+def test_repay_burn_debt_token(
+    repay, account, pool_configuration, dai, skip_live_testing
+):
 
     # arrange
     debt_token_address = pool_configuration.underlyingAssetToDebtToken(dai)
@@ -267,7 +308,9 @@ def test_repay_burn_debt_token(repay, account, pool_configuration, dai):
     assert debt_token_contract.balanceOf(account) == 0
 
 
-def test_update_state_on_supply(supply, add_token, reserves_manager, dai):
+def test_update_state_on_supply(
+    supply, add_token, reserves_manager, dai, skip_live_testing
+):
 
     # arrange
     total_deposited = SUPPLY_AMOUNT
@@ -302,7 +345,9 @@ def test_update_state_on_supply(supply, add_token, reserves_manager, dai):
     assert reserves_manager.getReserve(dai) == expected_updated_reserve
 
 
-def test_update_state_on_borrow(borrow, add_token, reserves_manager, dai):
+def test_update_state_on_borrow(
+    borrow, add_token, reserves_manager, dai, skip_live_testing
+):
 
     # arrange
     total_deposited = SUPPLY_AMOUNT
@@ -372,7 +417,9 @@ def test_update_state_on_borrow(borrow, add_token, reserves_manager, dai):
     )
 
 
-def test_update_state_on_withdraw(withdraw, add_token, reserves_manager, dai):
+def test_update_state_on_withdraw(
+    withdraw, add_token, reserves_manager, dai, skip_live_testing
+):
 
     # arrange
     total_deposited = 0
@@ -410,7 +457,9 @@ def test_update_state_on_withdraw(withdraw, add_token, reserves_manager, dai):
     assert reserves_manager.getReserve(dai) == expected_updated_reserve
 
 
-def test_update_state_on_repay(repay, add_token, reserves_manager, dai):
+def test_update_state_on_repay(
+    repay, add_token, reserves_manager, dai, skip_live_testing
+):
 
     # arrange
     total_deposited = SUPPLY_AMOUNT
@@ -478,6 +527,7 @@ def test_liquidation_call_nul_amount(
     dai,
     link,
     mock_v3_aggregator_link,
+    skip_live_testing,
 ):
 
     # arrange
@@ -510,6 +560,7 @@ def test_liquidation_call_big_amount(
     dai,
     link,
     mock_v3_aggregator_link,
+    skip_live_testing,
 ):
 
     # arrange
@@ -543,6 +594,7 @@ def test_liquidation_transform_asset_from_liquidator_to_xtoken_contract(
     dai,
     link,
     mock_v3_aggregator_link,
+    skip_live_testing,
 ):
 
     # arrange
@@ -584,6 +636,7 @@ def test_liquidation_mint_collateral_xtoken_to_liquidator(
     dai,
     link,
     mock_v3_aggregator_link,
+    skip_live_testing,
 ):
 
     # arrange
@@ -623,6 +676,7 @@ def test_liquidation_mint_debt_token_to_user(
     dai,
     link,
     mock_v3_aggregator_link,
+    skip_live_testing,
 ):
 
     # arrange
@@ -664,6 +718,7 @@ def test_liquidation_call_returns_true(
     dai,
     link,
     mock_v3_aggregator_link,
+    skip_live_testing,
 ):
 
     # arrange
@@ -703,6 +758,7 @@ def test_liquidation_call_returns_false(
     dai,
     link,
     mock_v3_aggregator_link,
+    skip_live_testing,
 ):
 
     # arrange

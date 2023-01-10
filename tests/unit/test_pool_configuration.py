@@ -4,13 +4,15 @@ from conftest import BASE_VARIABLE_BORROW_RATE, INTEREST_RATE_SLOPE
 from web3 import Web3
 
 
-def test_pool_configuration_constructor(pool_configuration, pool):
+def test_pool_configuration_constructor(pool_configuration, pool, skip_live_testing):
 
     # assert
     assert pool_configuration.poolAddress() == pool.address
 
 
-def test_set_reserve_manager_contract(pool_configuration, reserves_manager, account):
+def test_set_reserve_manager_contract(
+    pool_configuration, reserves_manager, account, skip_live_testing
+):
 
     # act
     pool_configuration.setReserveManagerContract(reserves_manager, {"from": account})
@@ -20,7 +22,7 @@ def test_set_reserve_manager_contract(pool_configuration, reserves_manager, acco
 
 
 def test_only_owner_can_set_reserve_manager_contract(
-    pool_configuration, reserves_manager
+    pool_configuration, reserves_manager, skip_live_testing
 ):
 
     # arrange
@@ -33,7 +35,9 @@ def test_only_owner_can_set_reserve_manager_contract(
         )
 
 
-def test_only_owner_can_add_token(dai, mock_v3_aggregator, pool_configuration):
+def test_only_owner_can_add_token(
+    dai, mock_v3_aggregator, pool_configuration, skip_live_testing
+):
 
     # arrange
     non_owner = get_account(index=2)
@@ -60,8 +64,7 @@ def test_only_owner_can_add_token(dai, mock_v3_aggregator, pool_configuration):
 
 
 def test_add_token_creates_new_xtoken_instance(
-    pool_configuration,
-    add_token,
+    pool_configuration, add_token, skip_live_testing
 ):
 
     # arrange
@@ -73,8 +76,7 @@ def test_add_token_creates_new_xtoken_instance(
 
 
 def test_add_token_creates_new_debt_token_instance(
-    pool_configuration,
-    add_token,
+    pool_configuration, add_token, skip_live_testing
 ):
 
     # arrange
@@ -85,14 +87,16 @@ def test_add_token_creates_new_debt_token_instance(
     assert debt_token_contract.name() == "debtDAI"
 
 
-def test_add_token_map_underlying_asset_to_x_token(add_token, pool_configuration, dai):
+def test_add_token_map_underlying_asset_to_x_token(
+    add_token, pool_configuration, dai, skip_live_testing
+):
 
     # assert
     assert pool_configuration.underlyingAssetToXtoken(dai) == add_token[0]
 
 
 def test_add_token_map_underlying_asset_to_debt_token(
-    add_token, pool_configuration, dai
+    add_token, pool_configuration, dai, skip_live_testing
 ):
 
     # assert
@@ -100,7 +104,7 @@ def test_add_token_map_underlying_asset_to_debt_token(
 
 
 def test_add_token_map_underlying_asset_to_is_available(
-    add_token, pool_configuration, dai
+    add_token, pool_configuration, dai, skip_live_testing
 ):
 
     # assert
@@ -108,7 +112,7 @@ def test_add_token_map_underlying_asset_to_is_available(
 
 
 def test_add_token_creates_new_price_oracle_instance(
-    pool_configuration, add_token, mock_v3_aggregator
+    pool_configuration, add_token, mock_v3_aggregator, skip_live_testing
 ):
 
     # arrange
@@ -122,7 +126,7 @@ def test_add_token_creates_new_price_oracle_instance(
 
 
 def test_add_token_map_underlying_asset_price_oracle(
-    add_token, pool_configuration, dai
+    add_token, pool_configuration, dai, skip_live_testing
 ):
 
     # assert
@@ -130,7 +134,12 @@ def test_add_token_map_underlying_asset_price_oracle(
 
 
 def test_add_token_init_new_reserve(
-    add_token, pool_configuration, reserves_manager, dai, initial_reserve
+    add_token,
+    pool_configuration,
+    reserves_manager,
+    dai,
+    initial_reserve,
+    skip_live_testing,
 ):
 
     # assert
@@ -138,7 +147,7 @@ def test_add_token_init_new_reserve(
 
 
 def test_add_token_pushes_underlying_assset_tokens_array(
-    add_token, pool_configuration, dai
+    add_token, pool_configuration, dai, skip_live_testing
 ):
 
     # assert

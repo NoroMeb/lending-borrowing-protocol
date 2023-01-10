@@ -4,19 +4,19 @@ from brownie import reverts, Contract, XToken, PriceOracle, DebtToken
 import pytest
 
 
-def test_pool_logic_constructor(pool_logic, pool_configuration):
+def test_pool_logic_constructor(pool_logic, pool_configuration, skip_live_testing):
 
     # assert
     assert pool_logic.poolConfiguration() == pool_configuration
 
 
-def test_get_user_balance_in_usd(pool_logic, supply, account, dai):
+def test_get_user_balance_in_usd(pool_logic, supply, account, dai, skip_live_testing):
 
     # act /assert
     assert pool_logic._getUserBalanceInUSD.call(account, dai) == SUPPLY_AMOUNT * PRICE
 
 
-def test_get_amount_in_usd(add_token, pool_logic, dai):
+def test_get_amount_in_usd(add_token, pool_logic, dai, skip_live_testing):
 
     # arrange
     amount = Web3.toWei(100, "ether")
@@ -25,14 +25,18 @@ def test_get_amount_in_usd(add_token, pool_logic, dai):
     assert pool_logic._getAmountInUSD.call(amount, dai) == amount * PRICE
 
 
-def test_validate_borrow_null_amount(supply, pool_logic, account, dai):
+def test_validate_borrow_null_amount(
+    supply, pool_logic, account, dai, skip_live_testing
+):
 
     # act / assert
     with reverts("Amount must be greater than 0"):
         pool_logic.validateBorrow(account, dai, 0, dai, {"from": account})
 
 
-def test_validate_borrow_non_available_token(supply, pool_logic, account, link):
+def test_validate_borrow_non_available_token(
+    supply, pool_logic, account, link, skip_live_testing
+):
 
     # arrange
     amount = Web3.toWei(100, "ether")
@@ -43,7 +47,7 @@ def test_validate_borrow_non_available_token(supply, pool_logic, account, link):
 
 
 def test_validate_borrow_amount_greater_than_max_amount_in_usd(
-    account, supply, pool_logic, dai
+    account, supply, pool_logic, dai, skip_live_testing
 ):
 
     # arrange
@@ -55,7 +59,9 @@ def test_validate_borrow_amount_greater_than_max_amount_in_usd(
     ) == (False, 0)
 
 
-def test_validate_borrow_correct_amount(account, supply, pool_logic, dai):
+def test_validate_borrow_correct_amount(
+    account, supply, pool_logic, dai, skip_live_testing
+):
 
     # arrange
     amount = Web3.toWei(75, "ether")
@@ -66,14 +72,18 @@ def test_validate_borrow_correct_amount(account, supply, pool_logic, dai):
     ) == (True, amount)
 
 
-def test_validate_withdraw_null_amount(supply, pool_logic, account, dai):
+def test_validate_withdraw_null_amount(
+    supply, pool_logic, account, dai, skip_live_testing
+):
 
     # act / assert
     with reverts("Amount must be greater than 0"):
         pool_logic.validateWithdraw(account, dai, 0, {"from": account})
 
 
-def test_validate_withdraw_non_available_token(supply, pool_logic, account, link):
+def test_validate_withdraw_non_available_token(
+    supply, pool_logic, account, link, skip_live_testing
+):
 
     # arrange
     amount = Web3.toWei(50, "ether")
@@ -84,7 +94,7 @@ def test_validate_withdraw_non_available_token(supply, pool_logic, account, link
 
 
 def test_validate_withdraw_amount_greater_than_user_balance(
-    account, supply, pool_logic, dai
+    account, supply, pool_logic, dai, skip_live_testing
 ):
 
     # arrange
@@ -97,7 +107,9 @@ def test_validate_withdraw_amount_greater_than_user_balance(
     )
 
 
-def test_validate_withdraw_correct_amount(account, supply, pool_logic, dai):
+def test_validate_withdraw_correct_amount(
+    account, supply, pool_logic, dai, skip_live_testing
+):
 
     # act / assert
     assert (
@@ -106,7 +118,7 @@ def test_validate_withdraw_correct_amount(account, supply, pool_logic, dai):
     )
 
 
-def test_get_user_debt_in_usd(pool_logic, borrow, account, dai):
+def test_get_user_debt_in_usd(pool_logic, borrow, account, dai, skip_live_testing):
 
     # act /assert
     assert int(
@@ -114,7 +126,7 @@ def test_get_user_debt_in_usd(pool_logic, borrow, account, dai):
     ) == BORROW_AMOUNT * PRICE / (10**18)
 
 
-def test_get_collateral_amount_to_mint(add_token, pool_logic, dai):
+def test_get_collateral_amount_to_mint(add_token, pool_logic, dai, skip_live_testing):
 
     # arrange
     amount = Web3.toWei(100, "ether")
@@ -137,6 +149,7 @@ def test_validate_liquidation_non_undercollateralized(
     account,
     dai,
     link,
+    skip_live_testing,
 ):
 
     # arrange
@@ -164,6 +177,7 @@ def test_validate_liquidation_undercollateralized(
     dai,
     link,
     mock_v3_aggregator_link,
+    skip_live_testing,
 ):
 
     # arrange

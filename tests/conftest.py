@@ -298,3 +298,9 @@ def initial_reserve(add_token):
 @pytest.fixture()
 def reserve(reserves_manager, init_reserve, add_token, dai):
     return reserves_manager.getReserve(dai)
+
+
+@pytest.fixture(scope="session")
+def skip_live_testing():
+    if network.show_active() not in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
+        pytest.skip("Only for local testing !")
