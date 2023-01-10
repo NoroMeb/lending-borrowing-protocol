@@ -92,7 +92,6 @@ def account_initial_dai_balance(dai, account):
 def link():
     account = get_account(index=2)
     link = LinkTokenMock.deploy({"from": account})
-    link.LinkToken({"from": account})
     return link
 
 
