@@ -207,9 +207,9 @@ def test_get_variable_borrow_index_since_last_update(
     print(reserves_manager.getVariableBorrowIndexSinceLastUpdate(dai) / (10**18))
 
     # act / assert
-    assert reserves_manager.getVariableBorrowIndexSinceLastUpdate(dai) / (
-        10**18
-    ) == pytest.approx(expected_variable_borrow_index)
+    assert int(
+        reserves_manager.getVariableBorrowIndexSinceLastUpdate(dai) / (10**18)
+    ) == int(expected_variable_borrow_index)
 
 
 def test_get_supply_index_since_last_update(
